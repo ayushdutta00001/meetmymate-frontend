@@ -1,3 +1,5 @@
+console.log('ADMIN APP LOADED');
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { isAdminUser } from './lib/admin-auth';
