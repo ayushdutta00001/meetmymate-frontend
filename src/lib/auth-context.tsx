@@ -1,26 +1,33 @@
 /**
  * Authentication Context
  * Manages authentication state across the application
+ * (NO admin authorization logic here)
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
+
 import {
   signIn as authSignIn,
   signUp as authSignUp,
   signOut as authSignOut,
   getCurrentUser,
-  isAdmin as checkIsAdmin,
   AuthUser,
   SignInCredentials,
   SignUpCredentials,
   resetPassword,
 } from './supabase-auth';
+
 import { clearAccessToken } from './api';
 
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  isAdmin: boolean;
   isLoading: boolean;
   signIn: (credentials: SignInCredentials) => Promise<void>;
   signUp: (credentials: SignUpCredentials) => Promise<void>;
@@ -37,10 +44,11 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user on mount
+  // --------------------------------------------------
+  // Load user on app start
+  // --------------------------------------------------
   useEffect(() => {
     loadUser();
   }, []);
@@ -49,54 +57,55 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
-      
-      if (currentUser) {
-        const adminStatus = await checkIsAdmin();
-        setIsAdmin(adminStatus);
-      }
     } catch (error) {
       console.error('Failed to load user:', error);
       setUser(null);
-      setIsAdmin(false);
     } finally {
       setIsLoading(false);
     }
   }
 
+  // --------------------------------------------------
+  // Sign in
+  // --------------------------------------------------
   async function signIn(credentials: SignInCredentials) {
     try {
       const { user: newUser } = await authSignIn(credentials);
       setUser(newUser);
-      
-      const adminStatus = await checkIsAdmin();
-      setIsAdmin(adminStatus);
     } catch (error) {
       console.error('Sign in failed:', error);
       throw error;
     }
   }
 
+  // --------------------------------------------------
+  // Sign up
+  // --------------------------------------------------
   async function signUp(credentials: SignUpCredentials) {
     try {
       const { user: newUser } = await authSignUp(credentials);
       setUser(newUser);
-      setIsAdmin(false);
     } catch (error) {
       console.error('Sign up failed:', error);
       throw error;
     }
   }
 
+  // --------------------------------------------------
+  // Sign out
+  // --------------------------------------------------
   async function signOut() {
     try {
       await authSignOut();
     } finally {
       setUser(null);
-      setIsAdmin(false);
       clearAccessToken();
     }
   }
 
+  // --------------------------------------------------
+  // Reset password
+  // --------------------------------------------------
   async function handleResetPassword(email: string) {
     await resetPassword(email);
   }
@@ -108,7 +117,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
-    isAdmin,
     isLoading,
     signIn,
     signUp,
@@ -117,12 +125,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refreshUser,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
