@@ -167,10 +167,17 @@ export type Screen =
 export default function UserApp() {
  const { user, isAuthenticated, isLoading, signOut } = useAuth();
 
-  const [currentScreen, setCurrentScreen] = useState<Screen>('opening');
+ const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
+  const savedScreen = sessionStorage.getItem('meetmymate_current_screen');
+
+  return savedScreen ? (savedScreen as Screen) : 'opening';
+});
  
   const [previousScreen, setPreviousScreen] = useState<Screen>('home');
   const [navigationHistory, setNavigationHistory] = useState<Screen[]>([]);
+ const [openingCompleted, setOpeningCompleted] = useState(() => {
+  return sessionStorage.getItem('meetmymate_opening_completed') === 'true';
+});
  const [isP2PProfileEnabled, setIsP2PProfileEnabled] = useState(false);
 const [selectedPeerId, setSelectedPeerId] = useState<string | null>(null);
 const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
@@ -181,13 +188,23 @@ const [selectedService, setSelectedService] = useState<string>('movie-buddy');
 const [bookingData, setBookingData] = useState<string>('');
 const [paymentData, setPaymentData] = useState<string>('');
 const [selectedBookingId, setSelectedBookingId] = useState<string>('');
-  useState<string>('');
   const [selectedBlindDateBookingId, setSelectedBlindDateBookingId] =
   useState<string>('');
 const [profileStatus, setProfileStatus] = useState<
   'unknown' | 'none' | 'draft' | 'complete'
 >('unknown');
 const [isFinishingOnboarding, setIsFinishingOnboarding] = useState(false);
+
+useEffect(() => {
+  sessionStorage.setItem('meetmymate_current_screen', currentScreen);
+}, [currentScreen]);
+
+const handleOpeningComplete = () => {
+  sessionStorage.setItem('meetmymate_opening_completed', 'true');
+  setOpeningCompleted(true);
+};
+
+
 
 useEffect(() => {
   const channel = startNotificationEmailListener();
@@ -269,9 +286,17 @@ if (isLoading) return;
 
 // 🚫 DO NOTHING if just signed up or logging in
 if (!user && isAuthenticated === false) {
+  if (currentScreen === 'opening') {
+    if (openingCompleted) {
+      setCurrentScreen('terms');
+    }
+    return;
+  }
+
   if (!publicScreens.includes(currentScreen)) {
     setCurrentScreen('welcome');
   }
+
   return;
 }
 
@@ -295,11 +320,11 @@ if (profileStatus === 'draft') {
   // FULLY REGISTERED USER
   // ----------------------------------
   if (profileStatus === 'complete') {
-    if (currentScreen === 'opening') {
-      setCurrentScreen('home');
-    }
+  if (currentScreen === 'opening' && openingCompleted) {
+    setCurrentScreen('home');
   }
-}, [isLoading, user, profileStatus, currentScreen]);
+}
+}, [isLoading, user, profileStatus, currentScreen, openingCompleted]);
 
 
 useEffect(() => {
@@ -600,27 +625,10 @@ const showFooter =
   /* =========================
      LOADING STATE
   ========================= */
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading…</p>
-      </div>
-    );
-  }
-  // SAFETY: prevent white screen while profile status is being resolved
-if (isAuthenticated && profileStatus === 'unknown') {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p>Checking your profile…</p>
-    </div>
-  );
-}
 
 
 
 
-
- 
 
     return (
   <div className="w-full min-h-screen bg-[#F2F4F7] dark:bg-[#0A0F1F] text-[#0B0B0C] dark:text-white transition-colors duration-300">
@@ -652,10 +660,9 @@ if (isAuthenticated && profileStatus === 'unknown') {
         >
 
           {/* -------- AUTH FLOW -------- */}
-          {currentScreen === 'opening' && (
-            <OpeningScreen onComplete={() => navigate('terms')} />
-          )}
-
+        {currentScreen === 'opening' && (
+  <OpeningScreen onComplete={handleOpeningComplete} />
+)}
           {currentScreen === 'terms' && (
             <TermsScreen onAccept={() => navigate('welcome')} onNavigate={navigate} />
           )}

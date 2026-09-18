@@ -16,6 +16,8 @@ import {
   Clock,
   ChevronRight,
 } from 'lucide-react';
+
+import Loader from '../ui/Loader';
 import { MatchNotificationBanner } from '../MatchNotificationBanner';
 import { supabase } from '../../supabase';
 import { registerPushNotifications } from '../../lib/push';
@@ -540,19 +542,18 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
   // ===================================================
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#070B18] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-4 border-gray-200 dark:border-gray-700 border-t-blue-500 animate-spin" />
+  return (
+    <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#070B18] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader />
 
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Loading your home…
-          </p>
-        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Loading your home…
+        </p>
       </div>
-    );
-  }
-
+    </div>
+  );
+}
   const userName = getProfileName(profile);
   const userCity = getProfileCity(profile);
 
@@ -1678,7 +1679,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                           "'Outfit', sans-serif",
                       }}
                     >
-                      Peer to Peer Match
+                     PartnerUp (p2p meetings)
                     </h2>
 
                     <p className="

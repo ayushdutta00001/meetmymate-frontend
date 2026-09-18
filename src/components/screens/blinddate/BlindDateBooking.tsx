@@ -159,33 +159,28 @@ console.log("REQUEST", {
   time_slot: "",
 });
 
-   const res = await createBlindDateBooking({
-
-    preferences: buildPreferences(),
-
-    city: formData.city,
-
-    date: '',
-
-    time_slot: ''
-
+ const res = await createBlindDateBooking({
+  preferences: buildPreferences(),
+  city: formData.city,
+  date: '',
+  time_slot: '',
 });
 
-    if (!res.success || !res.data) {
-      throw new Error(res.error || 'Failed to create booking');
-    }
+if (!res.success || !res.data) {
+  throw new Error(
+    res.error || 'Failed to prepare payment'
+  );
+}
 
-    // ✅ TEMPORARY HANDOFF STORAGE (NOT SOURCE OF TRUTH)
-    sessionStorage.setItem(
-      'blindDatePayment',
-      JSON.stringify({
-        bookingId: res.data.id,
-        amount: res.data.amount,
-      })
-    );
+sessionStorage.setItem(
+  'blindDatePayment',
+  JSON.stringify({
+    paymentDraftId: res.data.id,
+    amount: 399,
+  })
+);
 
-    // ✅ navigation stays clean
-    onNavigate('blind-date-payment-new');
+onNavigate('blind-date-payment-new');
 
   } catch (err: any) {
     alert(err.message || 'Something went wrong');

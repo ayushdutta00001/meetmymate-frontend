@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Shield, MapPin, Clock, AlertCircle } from 'lucide-react';
 import { BackButton } from '../../ui/BackButton';
-import BlindDateEligibilityModal from "../../modals/BlindDateEligibilityModal";
+
 
 interface BlindDateLandingProps {
   onNavigate: (page: string) => void;
@@ -10,7 +10,7 @@ interface BlindDateLandingProps {
 }
 
 export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) {
-  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
+ 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0F1F] pb-24 md:pb-8 md:pr-24">
       {/* Header */}
@@ -50,12 +50,12 @@ export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) 
           transition={{ delay: 0.5 }}
           className="space-y-4"
         >
-          <button
-            onClick={() => setShowEligibilityModal(true)}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl font-medium"
-          >
-            Book a Blind Date
-          </button>
+          <button 
+  onClick={() => onNavigate('blind-date-booking')}
+  className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl font-medium" 
+>
+  Book a Blind Date 
+</button>
           <button
             onClick={() => onNavigate('blind-date-how-it-works')}
             className="w-full py-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all"
@@ -157,14 +157,7 @@ export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) 
         </motion.div>
            </div>
 
-      <BlindDateEligibilityModal
-        open={showEligibilityModal}
-        onClose={() => setShowEligibilityModal(false)}
-        onContinue={() => {
-          setShowEligibilityModal(false);
-          onNavigate("blind-date-booking");
-        }}
-      />
+     
 
     </div>
   );

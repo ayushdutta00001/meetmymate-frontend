@@ -1,9 +1,6 @@
 import React from "react";
 import {
-  Facebook,
-  Instagram,
-  Linkedin,
-  Twitter,
+
   Mail,
   ShieldCheck,
 } from "lucide-react";
@@ -103,12 +100,7 @@ export function Footer({ onNavigate }: FooterProps) {
 
             <div className="mt-5 space-y-3">
 
-              <button
-                onClick={() => handleNavigate("rent-friend")}
-                className="block text-sm text-gray-400 hover:text-white hover:translate-x-0.5 transition-all"
-              >
-                Rent a Friend
-              </button>
+            
 
               <button
                 onClick={() => handleNavigate("blind-date")}
@@ -117,18 +109,13 @@ export function Footer({ onNavigate }: FooterProps) {
                 Blind Date
               </button>
 
-              <button
-                onClick={() => handleNavigate("business-meetup")}
-                className="block text-sm text-gray-400 hover:text-white hover:translate-x-0.5 transition-all"
-              >
-                Business Meetup
-              </button>
+             
 
               <button
                 onClick={() => handleNavigate("p2p-peer-listing")}
                 className="block text-sm text-gray-400 hover:text-white hover:translate-x-0.5 transition-all"
               >
-                P2P Meetings
+               PartnerUp
               </button>
 
             </div>

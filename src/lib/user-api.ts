@@ -1,3 +1,4 @@
+
 /**
  * User API Services
  * All user-facing Edge Functions mapped to TypeScript functions
@@ -12,16 +13,39 @@ import { api, ApiResponse } from './api';
 export interface BlindDateBooking {
   id: string;
   user_id: string;
-  status: 'pending_payment' | 'confirmed' | 'completed' | 'cancelled';
+
+  status:
+    | 'pending_payment'
+    | 'pending'
+    | 'confirmed'
+    | 'completed'
+    | 'cancelled';
+
   preferences: any;
+
   meeting_date?: string;
   meeting_time?: string;
+
   location?: string;
-  payment_status: 'pending' | 'paid' | 'refunded';
+  meeting_location?: string;
+
+  payment_status:
+    | 'pending'
+    | 'paid'
+    | 'refunded';
+
   amount: number;
+
   created_at: string;
   updated_at: string;
 }
+
+export interface BlindDatePaymentFinalization {
+  booking: BlindDateBooking;
+  already_finalized?: boolean;
+  warning?: string;
+}
+
 export interface BlindDateNotification {
   id: string;
   booking_id: string;
@@ -33,64 +57,119 @@ export interface BlindDateNotification {
   created_at: string;
 }
 
+/**
+ * IMPORTANT:
+ * This function name is kept unchanged so the existing frontend
+ * does not need to change its import.
+ *
+ * The Edge Function now creates a PAYMENT DRAFT, not a real booking.
+ */
 export async function createBlindDateBooking(data: {
   preferences: any;
   date: string;
   time_slot: string;
   city: string;
-}): Promise<ApiResponse<BlindDateBooking>> {
-  return api.post('create_blind_date_booking', data);
+}): Promise<ApiResponse<{
+  id: string;
+  amount: number;
+  status: 'pending';
+  city?: string;
+  meeting_date?: string | null;
+  meeting_time?: string | null;
+}>> {
+  return api.post(
+    'create_blind_date_booking',
+    data
+  );
 }
 
-export async function getMyBlindDateBookings(): Promise<ApiResponse<BlindDateBooking[]>> {
-  return api.get('get_my_blind_date_bookings');
+export async function getMyBlindDateBookings(): Promise<
+  ApiResponse<BlindDateBooking[]>
+> {
+  return api.get(
+    'get_my_blind_date_bookings'
+  );
 }
 
 export async function getBlindDateBookingStatus(
   bookingId: string
 ): Promise<ApiResponse<BlindDateBooking>> {
-  return api.post("get_blind_date_booking_status", {
-    booking_id: bookingId,
-  });
+  return api.post(
+    'get_blind_date_booking_status',
+    {
+      booking_id: bookingId,
+    }
+  );
 }
 
+/**
+ * Finalize a verified Blind Date payment.
+ *
+ * IMPORTANT:
+ * booking_id is NO LONGER used here.
+ *
+ * The payment draft is converted into the real booking
+ * only after the Razorpay payment has been verified.
+ */
 export async function markBlindDatePaymentSuccess(
-  bookingId: string,
+  paymentDraftId: string,
   razorpayOrderId: string,
   razorpayPaymentId: string,
   razorpaySignature: string
-): Promise<ApiResponse<any>> {
-  return api.post("mark_blind_date_payment_success", {
-    booking_id: bookingId,
-    razorpay_order_id: razorpayOrderId,
-    razorpay_payment_id: razorpayPaymentId,
-    razorpay_signature: razorpaySignature,
-  });
+): Promise<
+  ApiResponse<BlindDatePaymentFinalization>
+> {
+  return api.post(
+    'mark_blind_date_payment_success',
+    {
+      payment_draft_id:
+        paymentDraftId,
+
+      razorpay_order_id:
+        razorpayOrderId,
+
+      razorpay_payment_id:
+        razorpayPaymentId,
+
+      razorpay_signature:
+        razorpaySignature,
+    }
+  );
 }
 
 export async function getBlindDateNotifications(): Promise<
   ApiResponse<BlindDateNotification[]>
 > {
-  return api.post("blind_date_notifications", {
-    action: "list",
-  });
+  return api.post(
+    'blind_date_notifications',
+    {
+      action: 'list',
+    }
+  );
 }
 
 export async function markBlindDateNotificationRead(
   notificationId: string
 ): Promise<ApiResponse<void>> {
-  return api.post("blind_date_notifications", {
-    action: "read",
-    notification_id: notificationId,
-  });
+  return api.post(
+    'blind_date_notifications',
+    {
+      action: 'read',
+      notification_id:
+        notificationId,
+    }
+  );
 }
 
 export async function markAllBlindDateNotificationsRead(): Promise<
   ApiResponse<void>
 > {
-  return api.post("blind_date_notifications", {
-    action: "read_all",
-  });
+  return api.post(
+    'blind_date_notifications',
+    {
+      action: 'read_all',
+    }
+  );
 }
 
 // ============================================================================
@@ -115,53 +194,91 @@ export interface RentFriendBooking {
   id: string;
   user_id: string;
   provider_id: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+
+  status:
+    | 'pending'
+    | 'confirmed'
+    | 'completed'
+    | 'cancelled';
+
   booking_date: string;
   start_time: string;
   end_time: string;
   duration_hours: number;
   location: string;
   activity_type: string;
-  payment_status: 'pending' | 'paid' | 'refunded';
+
+  payment_status:
+    | 'pending'
+    | 'paid'
+    | 'refunded';
+
   amount: number;
+
   created_at: string;
   updated_at: string;
 }
 
-export async function listRentFriendProviders(filters?: {
-  location?: string;
-  interests?: string[];
-  min_rating?: number;
-}): Promise<ApiResponse<RentFriendProvider[]>> {
-  return api.post('list_rent_friend_providers', filters);
+export async function listRentFriendProviders(
+  filters?: {
+    location?: string;
+    interests?: string[];
+    min_rating?: number;
+  }
+): Promise<ApiResponse<RentFriendProvider[]>> {
+  return api.post(
+    'list_rent_friend_providers',
+    filters
+  );
 }
 
-export async function getRentFriendProvider(providerId: string): Promise<ApiResponse<RentFriendProvider>> {
-  return api.post('get_rent_friend_provider', { provider_id: providerId });
+export async function getRentFriendProvider(
+  providerId: string
+): Promise<ApiResponse<RentFriendProvider>> {
+  return api.post(
+    'get_rent_friend_provider',
+    {
+      provider_id: providerId,
+    }
+  );
 }
 
-export async function createRentFriendBooking(data: {
-  provider_id: string;
-  booking_date: string;
-  start_time: string;
-  duration_hours: number;
-  location: string;
-  activity_type: string;
-}): Promise<ApiResponse<RentFriendBooking>> {
-  return api.post('create_rent_friend_booking', data);
+export async function createRentFriendBooking(
+  data: {
+    provider_id: string;
+    booking_date: string;
+    start_time: string;
+    duration_hours: number;
+    location: string;
+    activity_type: string;
+  }
+): Promise<
+  ApiResponse<RentFriendBooking>
+> {
+  return api.post(
+    'create_rent_friend_booking',
+    data
+  );
 }
 
-export async function getMyRentFriendBookings(): Promise<ApiResponse<RentFriendBooking[]>> {
-  return api.get('get_my_rent_friend_bookings');
+export async function getMyRentFriendBookings(): Promise<
+  ApiResponse<RentFriendBooking[]>
+> {
+  return api.get(
+    'get_my_rent_friend_bookings'
+  );
 }
 
-export async function cancelRentFriendBooking(bookingId: string): Promise<ApiResponse<void>> {
-  return api.post('cancel_rent_friend_booking', { booking_id: bookingId });
+export async function cancelRentFriendBooking(
+  bookingId: string
+): Promise<ApiResponse<void>> {
+  return api.post(
+    'cancel_rent_friend_booking',
+    {
+      booking_id: bookingId,
+    }
+  );
 }
-
-
-
-
 
 // ============================================================================
 // P2P MATCHING SERVICES
@@ -183,51 +300,91 @@ export interface P2PMeetingRequest {
   id: string;
   requester_id: string;
   requested_id: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled';
+
+  status:
+    | 'pending'
+    | 'accepted'
+    | 'rejected'
+    | 'completed'
+    | 'cancelled';
+
   meeting_type: string;
   message: string;
+
   meeting_date?: string;
   meeting_time?: string;
   location?: string;
-  payment_status: 'pending' | 'paid' | 'refunded';
+
+  payment_status:
+    | 'pending'
+    | 'paid'
+    | 'refunded';
+
   amount: number;
+
   created_at: string;
   updated_at: string;
 }
 
-export async function listP2PPeers(filters?: {
-  business_type?: string;
-  looking_for?: string[];
-  location?: string;
-}): Promise<ApiResponse<P2PPeer[]>> {
-  return api.post('list_p2p_peers', filters);
+export async function listP2PPeers(
+  filters?: {
+    business_type?: string;
+    looking_for?: string[];
+    location?: string;
+  }
+): Promise<ApiResponse<P2PPeer[]>> {
+  return api.post(
+    'list_p2p_peers',
+    filters
+  );
 }
 
-export async function getP2PPeer(peerId: string): Promise<ApiResponse<P2PPeer>> {
-  return api.post('get_p2p_peer', { peer_id: peerId });
+export async function getP2PPeer(
+  peerId: string
+): Promise<ApiResponse<P2PPeer>> {
+  return api.post(
+    'get_p2p_peer',
+    {
+      peer_id: peerId,
+    }
+  );
 }
 
-export async function requestP2PMeeting(data: {
-  requested_id: string;
-  meeting_type: string;
-  message: string;
-  proposed_dates?: string[];
-}): Promise<ApiResponse<P2PMeetingRequest>> {
-  return api.post('request_p2p_meeting', data);
+export async function requestP2PMeeting(
+  data: {
+    requested_id: string;
+    meeting_type: string;
+    message: string;
+    proposed_dates?: string[];
+  }
+): Promise<
+  ApiResponse<P2PMeetingRequest>
+> {
+  return api.post(
+    'request_p2p_meeting',
+    data
+  );
 }
 
-export async function getMyP2PMeetings(): Promise<ApiResponse<P2PMeetingRequest[]>> {
-  return api.get('get_my_p2p_meetings');
+export async function getMyP2PMeetings(): Promise<
+  ApiResponse<P2PMeetingRequest[]>
+> {
+  return api.get(
+    'get_my_p2p_meetings'
+  );
 }
 
 export async function respondToP2PMeeting(
   meetingId: string,
   action: 'accept' | 'reject'
 ): Promise<ApiResponse<void>> {
-  return api.post('respond_to_p2p_meeting', {
-    meeting_id: meetingId,
-    action,
-  });
+  return api.post(
+    'respond_to_p2p_meeting',
+    {
+      meeting_id: meetingId,
+      action,
+    }
+  );
 }
 
 // ============================================================================
@@ -242,16 +399,30 @@ export interface PaymentIntent {
   client_secret?: string;
 }
 
-export async function createPayment(data: {
-  booking_id: string;
-  booking_type: string;
-  amount: number;
-}): Promise<ApiResponse<PaymentIntent>> {
-  return api.post('create_payment', data);
+export async function createPayment(
+  data: {
+    booking_id: string;
+    booking_type: string;
+    amount: number;
+  }
+): Promise<
+  ApiResponse<PaymentIntent>
+> {
+  return api.post(
+    'create_payment',
+    data
+  );
 }
 
-export async function confirmPayment(paymentId: string): Promise<ApiResponse<void>> {
-  return api.post('confirm_payment', { payment_id: paymentId });
+export async function confirmPayment(
+  paymentId: string
+): Promise<ApiResponse<void>> {
+  return api.post(
+    'confirm_payment',
+    {
+      payment_id: paymentId,
+    }
+  );
 }
 
 // ============================================================================
@@ -269,16 +440,32 @@ export interface Notification {
   created_at: string;
 }
 
-export async function getMyNotifications(): Promise<ApiResponse<Notification[]>> {
-  return api.get('get_my_notifications');
+export async function getMyNotifications(): Promise<
+  ApiResponse<Notification[]>
+> {
+  return api.get(
+    'get_my_notifications'
+  );
 }
 
-export async function markNotificationRead(notificationId: string): Promise<ApiResponse<void>> {
-  return api.post('mark_notification_read', { notification_id: notificationId });
+export async function markNotificationRead(
+  notificationId: string
+): Promise<ApiResponse<void>> {
+  return api.post(
+    'mark_notification_read',
+    {
+      notification_id:
+        notificationId,
+    }
+  );
 }
 
-export async function markAllNotificationsRead(): Promise<ApiResponse<void>> {
-  return api.post('mark_all_notifications_read');
+export async function markAllNotificationsRead(): Promise<
+  ApiResponse<void>
+> {
+  return api.post(
+    'mark_all_notifications_read'
+  );
 }
 
 // ============================================================================
@@ -295,20 +482,37 @@ export interface Review {
   created_at: string;
 }
 
-export async function submitReview(data: {
-  booking_id: string;
-  rating: number;
-  comment?: string;
-}): Promise<ApiResponse<Review>> {
-  return api.post('submit_review', data);
+export async function submitReview(
+  data: {
+    booking_id: string;
+    rating: number;
+    comment?: string;
+  }
+): Promise<ApiResponse<Review>> {
+  return api.post(
+    'submit_review',
+    data
+  );
 }
 
-export async function getReviewsForProvider(providerId: string): Promise<ApiResponse<Review[]>> {
-  return api.post('get_reviews_for_provider', { provider_id: providerId });
+export async function getReviewsForProvider(
+  providerId: string
+): Promise<ApiResponse<Review[]>> {
+  return api.post(
+    'get_reviews_for_provider',
+    {
+      provider_id:
+        providerId,
+    }
+  );
 }
 
-export async function getMyReceivedReviews(): Promise<ApiResponse<Review[]>> {
-  return api.get('get_my_received_reviews');
+export async function getMyReceivedReviews(): Promise<
+  ApiResponse<Review[]>
+> {
+  return api.get(
+    'get_my_received_reviews'
+  );
 }
 
 // ============================================================================
@@ -327,18 +531,38 @@ export interface UserProfile {
   preferences?: any;
 }
 
-export async function getMyProfile(): Promise<ApiResponse<UserProfile>> {
-  return api.get('get_my_profile');
+export async function getMyProfile(): Promise<
+  ApiResponse<UserProfile>
+> {
+  return api.get(
+    'get_my_profile'
+  );
 }
 
-export async function updateMyProfile(updates: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> {
-  return api.post('update_my_profile', updates);
+export async function updateMyProfile(
+  updates: Partial<UserProfile>
+): Promise<ApiResponse<UserProfile>> {
+  return api.post(
+    'update_my_profile',
+    updates
+  );
 }
 
-export async function uploadProfilePicture(file: File): Promise<ApiResponse<{ url: string }>> {
-  const formData = new FormData();
-  formData.append('file', file);
-  
+export async function uploadProfilePicture(
+  file: File
+): Promise<ApiResponse<{ url: string }>> {
+  const formData =
+    new FormData();
+
+  formData.append(
+    'file',
+    file
+  );
+
   // Note: This endpoint may need different handling for file uploads
-  return api.post('upload_profile_picture', formData);
+  return api.post(
+    'upload_profile_picture',
+    formData
+  );
 }
+
