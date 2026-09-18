@@ -22,7 +22,7 @@ import { MatchNotificationBanner } from '../MatchNotificationBanner';
 import { supabase } from '../../supabase';
 import { registerPushNotifications } from '../../lib/push';
 import { listenToMessages } from '../../firebase';
-
+import { useNotification } from '../../lib/NotificationContext';
 // =====================================================
 // HOME CACHE
 // =====================================================
@@ -135,9 +135,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
   const [showNotificationPrompt, setShowNotificationPrompt] =
     useState(false);
 
-  const unreadCount = notifications.filter(
-    (notification) => notification?.is_read === false
-  ).length;
+ const { notifCount: unreadCount } = useNotification();
 
   // ===================================================
   // NOTIFICATION PERMISSION
@@ -217,14 +215,12 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
       // -------------------------------------------------
 
       const [
-        profileRes,
-        notificationsRes,
-        bookingsRes,
-      ] = await Promise.all([
-        supabase.functions.invoke('get_my_profile'),
-        supabase.functions.invoke('get_my_notifications'),
-        supabase.functions.invoke('get_my_bookings'),
-      ]);
+  profileRes,
+  bookingsRes,
+] = await Promise.all([
+  supabase.functions.invoke('get_my_profile'),
+  supabase.functions.invoke('get_my_bookings'),
+]);
 
       // -------------------------------------------------
       // PROFILE
@@ -240,12 +236,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
       // NOTIFICATIONS
       // -------------------------------------------------
 
-      let parsedNotifications: any[] = [];
-
-      if (Array.isArray(notificationsRes?.data)) {
-        parsedNotifications = notificationsRes.data;
-        setNotifications(parsedNotifications);
-      }
+     
 
       // -------------------------------------------------
       // USER'S BOOKINGS
@@ -453,19 +444,17 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
       // =================================================
 
       homeCache = {
-        profile:
-          parsedProfile ??
-          homeCache.profile,
+  profile:
+    parsedProfile ??
+    homeCache.profile,
 
-        notifications:
-          Array.isArray(notificationsRes?.data)
-            ? parsedNotifications
-            : homeCache.notifications,
+  notifications:
+    homeCache.notifications,
 
-        stats: nextStats,
+  stats: nextStats,
 
-        loaded: true,
-      };
+  loaded: true,
+};
     } catch (error) {
       console.error(
         'Home load error:',

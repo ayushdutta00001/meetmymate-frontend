@@ -2,29 +2,14 @@ import { supabase } from '../../supabase';
 import { useBookings } from '../../lib/BookingContext';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  MessageCircle, 
-  MoreVertical,
-  Heart,
-  Filter,
+import {
+  Calendar,
   Search,
-  TrendingUp,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Phone,
-  Mail,
+  Heart,
   Star,
   X,
-  BadgeCheck,
 } from 'lucide-react';
 import { Card } from '../Card';
-import { ResponsiveContainer } from '../ui/ResponsiveContainer';
-import { ResponsiveButton } from '../ui/ResponsiveButton';
-import { api, handleApiError } from '../../lib/api';
 import { BookingCard, type BookingCardData } from '../bookings/BookingCard';
 import type { Screen } from "../../UserApp";
 
@@ -58,707 +43,977 @@ export function UserBookingDashboard({
   setSelectedMeetingId
 }: UserBookingDashboardProps) {
 
-  const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'saved'>('upcoming');
- const { bookings } = useBookings();
+  const [activeTab, setActiveTab] =
+    useState<'upcoming' | 'past' | 'saved'>('upcoming');
+
+  const { bookings } = useBookings();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<PastBooking | null>(null);
+  const [selectedBooking, setSelectedBooking] =
+    useState<PastBooking | null>(null);
   const [selectedRating, setSelectedRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [showError, setShowError] = useState(false);
-  const [blindDates, setBlindDates] = useState([]);
-const [rentFriends, setRentFriends] = useState<any[]>([]);
-const [experts, setExperts] = useState([]);
-const [errorMessage, setErrorMessage] = useState<string | null>(null);
-const [error, setError] = useState<string | null>(null);
-const [p2pMeetings, setP2pMeetings] = useState<any[]>([]);
-const [savedProviders, setSavedProviders] = useState<any[]>([]);
-const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-useEffect(() => {
-  const load = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const [p2pMeetings, setP2pMeetings] = useState<any[]>([]);
+  const [savedProviders, setSavedProviders] = useState<any[]>([]);
+  const [currentUserId, setCurrentUserId] =
+    useState<string | null>(null);
 
-    setCurrentUserId(user.id);
+  // ============================================================
+  // LOAD P2P MEETINGS
+  // ============================================================
 
-   const { data } = await supabase
-  .from("p2p_meetings")
-  .select(`
-    *,
-    user_a:users!p2p_meetings_user_a_fkey (
-      id, name, profile_photo_url
-    ),
-    user_b:users!p2p_meetings_user_b_fkey (
-      id, name, profile_photo_url
-    )
-  `)
-  .or(`user_a.eq.${user.id},user_b.eq.${user.id}`);
-    if (data) setP2pMeetings(data);
-  };
+  useEffect(() => {
+    const load = async () => {
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
 
-  load();
-}, []);
+      if (!user) return;
 
-useEffect(() => {
-  loadRentFriendBookings();
-}, []);
+      setCurrentUserId(user.id);
 
-const loadRentFriendBookings = async () => {
+      const { data, error } = await supabase
+        .from("p2p_meetings")
+        .select(`
+          *,
+          user_a:users!p2p_meetings_user_a_fkey (
+            id,
+            name,
+            profile_photo_url
+          ),
+          user_b:users!p2p_meetings_user_b_fkey (
+            id,
+            name,
+            profile_photo_url
+          )
+        `)
+        .or(`user_a.eq.${user.id},user_b.eq.${user.id}`);
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+      if (error) {
+        console.error(
+          "P2P meetings error:",
+          error
+        );
+        return;
+      }
 
-  if (!user) return;
+      if (data) {
+        setP2pMeetings(data);
+      }
+    };
 
-  const { data, error } = await supabase
-    .from("rent_friend_bookings")
-    .select(`
-      *,
-      providers (
-        full_name,
-        profile_photo_url,
-        avg_rating
-      )
-    `)
-    .eq("user_id", user.id)
-    .order("created_at", {
-      ascending: false
-    });
-
-  if (error) {
-    console.error(
-      "Rent friend bookings error:",
-      error
-    );
-    return;
-  }
-
-  setRentFriends(data || []);
-};
+    load();
+  }, []);
 
   const maxCharacters = 500;
 
- const normalizedBookings: BookingCardData[] = bookings.map((b) => {
-  // Blind Date booking (your table has preferences column)
-  if (b.preferences) {
-  const isArranged =
-    !!b.meeting_date &&
-    !!b.meeting_time &&
-    !!b.meeting_location;
+  // ============================================================
+  // NORMALIZE BLIND DATE BOOKINGS
+  // ============================================================
 
-  const status =
-    b.payment_status === 'refunded'
-      ? 'refunded'
-      : b.status === 'completed'
-      ? 'completed'
-      : isArranged
-      ? 'confirmed'
-      : 'holding';
+  const normalizedBookings: BookingCardData[] =
+    bookings
+      .filter((b) => {
+        // Only Blind Date bookings belong here.
+        // Blind Date bookings have preferences.
+        return !!b.preferences;
+      })
+      .map((b) => {
 
-  return {
-    id: b.id,
-    type: "blind_date" as const,
-    createdAt: b.created_at,
-    status,
-    date: b.meeting_date ?? 'To be decided',
-    time: b.meeting_time ?? 'To be decided',
-    location: b.meeting_location ?? 'To be decided',
-    amount: b.amount,
-    reviewed: false,
-    provider: {
-      name: 'Blind Date Match',
-      image: '/placeholder.jpg',
-      rating: null,
-    },
-  };
-}
+        const isArranged =
+          !!b.meeting_date &&
+          !!b.meeting_time &&
+          !!b.meeting_location;
 
-  // Rent Friend / Expert fallback
-  return {
-    id: b.id,
-    type: "service" as const,
-    createdAt: b.created_at,
-    status: b.status,
-    date: b.booking_date ?? b.consultation_date ?? '—',
-    time: b.start_time ?? b.consultation_time ?? '—',
-    location: b.location ?? '—',
-    amount: b.amount ?? 0,
-    reviewed: false,
-    provider: {
-      name: 'Provider',
-      image: '/placeholder.jpg',
-      rating: null,
-    },
-  };
-});
+        const status =
+          b.payment_status === 'refunded'
+            ? 'refunded'
+            : b.status === 'completed'
+            ? 'completed'
+            : isArranged
+            ? 'confirmed'
+            : 'holding';
 
-// ⭐ P2P NORMALIZATION (MUST BE OUTSIDE THE MAP)
-const normalizedP2PBookings = p2pMeetings.map((m) => {
-  const peer =
-  m.user_a?.id === currentUserId ? m.user_b : m.user_a;
+        return {
+          id: b.id,
 
-  return {
-    id: m.id,
-    type: "p2p" as const,
-    createdAt: m.created_at,
-    status: m.status,
+          type: "blind_date" as const,
 
-    // BASIC DISPLAY
-    date: m.meeting_time
-      ? new Date(m.meeting_time).toLocaleDateString()
-      : "To be scheduled",
+          createdAt: b.created_at,
 
-    time: m.meeting_time
-      ? new Date(m.meeting_time).toLocaleTimeString()
-      : "",
+          status,
 
-    location: m.meeting_point_text ?? "To be decided",
+          date:
+            b.meeting_date ??
+            'To be decided',
 
-    // ⭐ IMPORTANT (FOR RIGHT SIDE CARD UI)
-    confirmedDate: m.meeting_time
-      ? new Date(m.meeting_time).toLocaleDateString()
-      : undefined,
+          time:
+            b.meeting_time ??
+            'To be decided',
 
-    confirmedTime: m.meeting_time
-      ? new Date(m.meeting_time).toLocaleTimeString()
-      : undefined,
+          location:
+            b.meeting_location ??
+            'To be decided',
 
-    confirmedLocation: m.meeting_point_text ?? undefined,
+          amount:
+            b.amount ?? 399,
 
-    // PEER
-    peerName: peer?.name,
-    peerImage: peer?.profile_photo_url,
-  };
-});
-// ⭐ MERGE ALL BOOKINGS
-const normalizedRentFriendBookings =
-  rentFriends.map((b) => ({
-    id: b.id,
-createdAt: b.created_at,
-    type: "service" as const,
+          reviewed: false,
 
-    status:
-      b.booking_status === "pending"
-        ? "holding"
-        : b.booking_status,
+          provider: {
+            name: 'Blind Date Match',
+            image: '/placeholder.jpg',
+            rating: null,
+          },
+        };
+      });
 
-    date: b.booking_date,
+  // ============================================================
+  // NORMALIZE P2P BOOKINGS
+  // ============================================================
 
-    time: b.booking_time,
+  const normalizedP2PBookings =
+    p2pMeetings.map((m) => {
 
-    location:
-      b.meetup_location || "To be decided",
+      const peer =
+        m.user_a?.id === currentUserId
+          ? m.user_b
+          : m.user_a;
 
-    amount: b.total_amount || 0,
+      return {
+        id: m.id,
 
-    reviewed: false,
+        type: "p2p" as const,
 
-    provider: {
-      name:
-        b.providers?.full_name ||
-        "Provider",
+        createdAt: m.created_at,
 
-      image:
-        b.providers?.profile_photo_url ||
-        "/placeholder.jpg",
+        status: m.status,
 
-      rating:
-        b.providers?.avg_rating || 4.8,
-    },
-    notes:
-  b.special_request || "",
-  }));
+        date: m.meeting_time
+          ? new Date(
+              m.meeting_time
+            ).toLocaleDateString()
+          : "To be scheduled",
 
-const allBookings = [
-  ...normalizedBookings,
-  ...normalizedRentFriendBookings,
-  ...normalizedP2PBookings
-].sort((a, b) => {
-  const timeA = a.createdAt
-    ? new Date(a.createdAt).getTime()
-    : 0;
+        time: m.meeting_time
+          ? new Date(
+              m.meeting_time
+            ).toLocaleTimeString()
+          : "",
 
-  const timeB = b.createdAt
-    ? new Date(b.createdAt).getTime()
-    : 0;
+        location:
+          m.meeting_point_text ??
+          "To be decided",
 
-  return timeB - timeA;
-});
+        confirmedDate: m.meeting_time
+          ? new Date(
+              m.meeting_time
+            ).toLocaleDateString()
+          : undefined,
 
-const activeStatuses = [
-  "confirmed",
-  "paid_waiting_admin",
-  "scheduled",
-  "provider_en_route",
-  "provider_arrived",
-  "in_progress",
-  "awaiting_customer_confirmation",
-];
+        confirmedTime: m.meeting_time
+          ? new Date(
+              m.meeting_time
+            ).toLocaleTimeString()
+          : undefined,
 
+        confirmedLocation:
+          m.meeting_point_text ??
+          undefined,
 
+        peerName:
+          peer?.name,
 
-const completedBookings = allBookings.filter(
-  (b) => b.status === "completed"
-);
+        peerImage:
+          peer?.profile_photo_url,
+      };
+    });
 
-const refundedBookings = allBookings.filter(
-  (b) =>
-    b.status === "cancelled" ||
-    b.status === "refunded"
-);
+  // ============================================================
+  // MERGE BLIND DATE + P2P
+  // ============================================================
 
- 
+  const allBookings = [
+    ...normalizedBookings,
+    ...normalizedP2PBookings
+  ].sort((a, b) => {
 
+    const timeA = a.createdAt
+      ? new Date(
+          a.createdAt
+        ).getTime()
+      : 0;
 
+    const timeB = b.createdAt
+      ? new Date(
+          b.createdAt
+        ).getTime()
+      : 0;
+
+    return timeB - timeA;
+  });
+
+  // ============================================================
+  // COMPLETED / REFUNDED
+  // ============================================================
+
+  const completedBookings =
+    allBookings.filter(
+      (b) =>
+        b.status === "completed"
+    );
+
+  const refundedBookings =
+    allBookings.filter(
+      (b) =>
+        b.status === "cancelled" ||
+        b.status === "refunded"
+    );
+
+  // ============================================================
+  // REVIEW
+  // ============================================================
 
   const handleReviewSubmit = () => {
-    if (selectedRating > 0 && reviewText.trim().length > 0) {
-      
+
+    if (
+      selectedRating > 0 &&
+      reviewText.trim().length > 0
+    ) {
+
       setShowReviewModal(false);
       setSelectedBooking(null);
       setSelectedRating(0);
       setReviewText('');
+
     } else {
+
       setShowError(true);
+
     }
   };
 
+  // ============================================================
+  // BOOKING CLICK
+  // ============================================================
 
-function handleBookingClick(booking: BookingCardData): void {
-  if (booking.type === "blind_date") {
-    onNavigate(
-      "blind-date-booking-status",
-      booking.id
-    );
-    return;
-  }
+  function handleBookingClick(
+    booking: BookingCardData
+  ): void {
 
-  if (booking.type === "p2p") {
-    setSelectedMeetingId(booking.id);
-    onNavigate("p2p-meeting-confirmation");
-    return;
-  }
+    if (
+      booking.type === "blind_date"
+    ) {
 
-  if (booking.type === "service") {
-    onNavigate(
-      "rent-friend-booking-details",
-      booking.id
-    );
-    return;
+      onNavigate(
+        "blind-date-booking-status",
+        booking.id
+      );
+
+      return;
+    }
+
+    if (
+      booking.type === "p2p"
+    ) {
+
+      setSelectedMeetingId(
+        booking.id
+      );
+
+      onNavigate(
+        "p2p-meeting-confirmation"
+      );
+
+      return;
+    }
   }
-}
 
   return (
     <div className="min-h-screen bg-[#F2F4F7] dark:bg-[#0A0F1F] pb-24 md:pb-8 md:pr-24">
-      {/* Header */}
+
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
+
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{
+          opacity: 0,
+          y: -20
+        }}
+        animate={{
+          opacity: 1,
+          y: 0
+        }}
         className="sticky top-0 z-40 bg-white dark:bg-[#0A0F1F] border-b border-gray-200 dark:border-gray-800"
       >
+
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <h2 className="mb-4">My Bookings</h2>
+
+          <h2 className="mb-4">
+            My Bookings
+          </h2>
 
           {/* Tabs */}
+
           <div className="flex gap-2 mb-4">
+
             <button
-              onClick={() => setActiveTab('upcoming')}
+              onClick={() =>
+                setActiveTab('upcoming')
+              }
               className={`px-6 py-2.5 rounded-full text-sm transition-all ${
                 activeTab === 'upcoming'
                   ? 'bg-gradient-to-r from-[#3C82F6] to-[#1F3C88] text-white'
                   : 'glass dark:glass-dark hover:bg-white/20 dark:hover:bg-white/10'
               }`}
             >
-              Upcoming ({bookings.length})
+              Upcoming ({allBookings.length})
             </button>
+
             <button
-              onClick={() => setActiveTab('past')}
+              onClick={() =>
+                setActiveTab('past')
+              }
               className={`px-6 py-2.5 rounded-full text-sm transition-all ${
                 activeTab === 'past'
                   ? 'bg-gradient-to-r from-[#3C82F6] to-[#1F3C88] text-white'
                   : 'glass dark:glass-dark hover:bg-white/20 dark:hover:bg-white/10'
               }`}
             >
-              Past ({bookings.length})
+              Past ({completedBookings.length})
             </button>
-           
+
           </div>
 
           {/* Search */}
+
           {activeTab !== 'saved' && (
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+              />
+
               <input
                 type="text"
                 placeholder="Search bookings..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) =>
+                  setSearchQuery(
+                    e.target.value
+                  )
+                }
                 className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-[#0A0F1F] border-2 border-transparent focus:border-[#3C82F6] dark:focus:border-[#3758FF] transition-all outline-none text-[#0B0B0C] dark:text-white text-sm"
               />
+
             </div>
           )}
+
         </div>
+
       </motion.div>
 
-      {/* Main Content */}
+      {/* ======================================================
+          MAIN CONTENT
+      ====================================================== */}
+
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Upcoming Bookings */}
-       {activeTab === "upcoming" && (
-  <>
-    {allBookings.length === 0 ? (
-      <div className="text-center py-20">
-        <Calendar className="w-12 h-12 mx-auto text-gray-400 mb-4" />
 
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          No upcoming bookings
-        </h3>
+        {/* ====================================================
+            UPCOMING
+        ==================================================== */}
 
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          Your upcoming bookings will appear here.
-        </p>
-      </div>
-    ) : (
-      <div className="space-y-6">
-        {allBookings.map((booking, index) => (
-          <BookingCard
-            key={`${booking.type}-${booking.id}`}
-            booking={booking}
-            index={index}
-            onClick={() => handleBookingClick(booking)}
-          />
-        ))}
-      </div>
-    )}
-  </>
-)}
-
-        {/* Past Bookings */}
-        {activeTab === 'past' && (
+        {activeTab === "upcoming" && (
           <>
-{completedBookings.map((booking, index) => (
-<BookingCard
-  key={booking.id}
-  booking={booking}
-  index={index}
- onClick={() => {
 
-  if (booking.type === "blind_date") {
+            {allBookings.length === 0 ? (
 
-   onNavigate(
-    "blind-date-booking-status",
-    booking.id
-);
-    return;
-  }
+              <div className="text-center py-20">
 
-  if (booking.type === "p2p") {
+                <Calendar
+                  className="w-12 h-12 mx-auto text-gray-400 mb-4"
+                />
 
-    setSelectedMeetingId(booking.id);
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  No upcoming bookings
+                </h3>
 
-    onNavigate("p2p-meeting-confirmation");
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Your upcoming bookings will appear here.
+                </p>
 
-    return;
-  }
+              </div>
 
-  if (booking.type === "service") {
+            ) : (
 
-    onNavigate(
-      "rent-friend-booking-details",
-      booking.id
-    );
+              <div className="space-y-6">
 
-    return;
-  }
+                {allBookings.map(
+                  (booking, index) => (
 
-}}
-/>
-))}
-
-{refundedBookings.map((booking, index) => (
- <BookingCard
-  key={booking.id}
-  booking={booking}
-  index={index}
-onClick={() => {
-
-  if (booking.type === "blind_date") {
-
-  onNavigate(
-    "blind-date-booking-status",
-    booking.id
-);
-    return;
-  }
-
-  if (booking.type === "p2p") {
-
-    setSelectedMeetingId(booking.id);
-
-    onNavigate("p2p-meeting-confirmation");
-
-    return;
-  }
-
-  if (booking.type === "service") {
-
-    onNavigate(
-      "rent-friend-booking-details",
-      booking.id
-    );
-
-    return;
-  }
-
-}}
-/>
-))}
-</>
-        )}
-
-        {/* Saved Providers */}
-        {activeTab === 'saved' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {savedProviders.map((provider, index) => (
-              <motion.div
-                key={provider.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card variant="glass" className="overflow-hidden group cursor-pointer">
-                  <div className="relative h-48 -m-6 mb-4 overflow-hidden">
-                    <img
-                      src={provider.image}
-                      alt={provider.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    <BookingCard
+                      key={`${booking.type}-${booking.id}`}
+                      booking={booking}
+                      index={index}
+                      onClick={() =>
+                        handleBookingClick(
+                          booking
+                        )
+                      }
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center"
-                    >
-                      <Heart className="w-4 h-4 text-red-500 fill-current" />
-                    </motion.button>
-                    <div className="absolute bottom-3 left-3">
-                      <div className={`px-2 py-1 rounded-full text-xs ${
-                        provider.availability 
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-gray-500 text-white'
-                      }`}>
-                        {provider.availability ? 'Available' : 'Busy'}
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4>{provider.name}</h4>
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-yellow-500 text-sm">★</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {provider.rating}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">from</p>
-                        <p className="text-[#3C82F6] dark:text-[#3758FF]">₹{provider.price}</p>
-                      </div>
-                    </div>
+                  )
+                )}
 
-                    <div className="flex flex-wrap gap-2">
-                      {provider.interests.map((interest) => (
-                        <span
-                          key={interest}
-                          className="px-2 py-1 bg-[#F2F4F7] dark:bg-[#0A0F1F] rounded-full text-xs"
-                        >
-                          {interest}
-                        </span>
-                      ))}
-                    </div>
+              </div>
 
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => onNavigate('user-profile')}
-                      className="w-full py-2 bg-gradient-to-r from-[#3C82F6] to-[#1F3C88] text-white rounded-full text-sm"
-                    >
-                      View Profile
-                    </motion.button>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </div>
+            )}
 
-      {/* Review Modal */}
-      <AnimatePresence>
-        {showReviewModal && selectedBooking && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                setShowReviewModal(false);
-                setSelectedBooking(null);
-                setSelectedRating(0);
-                setReviewText('');
-                setShowError(false);
-              }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            />
-
-            {/* Modal */}
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="w-full max-w-lg glass dark:glass-dark rounded-2xl border border-white/10 dark:border-gray-800/50 backdrop-blur-xl overflow-hidden"
-              >
-                {/* Modal Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/10 dark:border-gray-800/50">
-                  <div>
-                    <h3 className="text-xl mb-1">Write a Review</h3>
-                    <p className="text-sm text-gray-400">
-                      How was your experience with {selectedBooking.provider.name}?
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowReviewModal(false);
-                      setSelectedBooking(null);
-                      setSelectedRating(0);
-                      setReviewText('');
-                      setShowError(false);
-                    }}
-                    className="w-8 h-8 rounded-lg hover:bg-white/5 transition-colors flex items-center justify-center flex-shrink-0"
-                  >
-                    <X className="w-5 h-5 text-gray-400" />
-                  </button>
-                </div>
-
-                {/* Modal Content */}
-                <div className="p-6 space-y-6">
-                  {/* Provider Info */}
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 dark:bg-white/5">
-                    <img
-                      src={selectedBooking.provider.image}
-                      alt={selectedBooking.provider.name}
-                      className="w-16 h-16 rounded-xl object-cover"
-                    />
-                    <div className="flex-1">
-                      <h4 className="text-sm mb-1">{selectedBooking.provider.name}</h4>
-                      <p className="text-xs text-gray-400">{selectedBooking.type}</p>
-                      <p className="text-xs text-gray-500">{selectedBooking.date}</p>
-                    </div>
-                  </div>
-
-                  {/* Rating Selector */}
-                  <div>
-                    <label className="text-sm text-gray-400 mb-3 block">
-                      Your Rating <span className="text-red-400">*</span>
-                    </label>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => {
-                            setSelectedRating(star);
-                            setShowError(false);
-                          }}
-                          onMouseEnter={() => setHoveredRating(star)}
-                          onMouseLeave={() => setHoveredRating(0)}
-                          className="transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded"
-                        >
-                          <Star
-                            className={`w-8 h-8 transition-colors ${
-                              star <= (hoveredRating || selectedRating)
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'fill-gray-700 text-gray-600 hover:text-gray-500'
-                            }`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                    {showError && selectedRating === 0 && (
-                      <p className="text-xs text-red-400 mt-2">Please select a rating</p>
-                    )}
-                  </div>
-
-                  {/* Review Text Input */}
-                  <div>
-                    <label className="text-sm text-gray-400 mb-3 block">
-                      Your Review <span className="text-red-400">*</span>
-                    </label>
-                    <textarea
-                      value={reviewText}
-                      onChange={(e) => {
-                        if (e.target.value.length <= maxCharacters) {
-                          setReviewText(e.target.value);
-                          setShowError(false);
-                        }
-                      }}
-                      placeholder="Share your experience with this service..."
-                      rows={6}
-                      className={`w-full px-4 py-3 rounded-xl bg-gray-900/50 border-2 transition-all outline-none text-sm text-gray-200 placeholder-gray-500 resize-none ${
-                        showError && reviewText.trim().length === 0
-                          ? 'border-red-500/50 focus:border-red-500'
-                          : 'border-white/10 focus:border-blue-500'
-                      }`}
-                    />
-                    <div className="flex items-center justify-between mt-2">
-                      {showError && reviewText.trim().length === 0 && (
-                        <p className="text-xs text-red-400">Please write a review</p>
-                      )}
-                      <div className="ml-auto text-xs text-gray-500">
-                        {reviewText.length} / {maxCharacters}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Modal Footer */}
-                <div className="flex items-center gap-3 p-6 border-t border-white/10 dark:border-gray-800/50">
-                  <button
-                    onClick={() => {
-                      setShowReviewModal(false);
-                      setSelectedBooking(null);
-                      setSelectedRating(0);
-                      setReviewText('');
-                      setShowError(false);
-                    }}
-                    className="flex-1 px-6 py-3 rounded-xl glass dark:glass-dark hover:bg-white/5 transition-colors text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleReviewSubmit}
-                    className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:shadow-blue-500/25 transition-all text-sm font-medium"
-                  >
-                    Submit Review
-                  </button>
-                </div>
-              </motion.div>
-            </div>
           </>
         )}
+
+        {/* ====================================================
+            PAST
+        ==================================================== */}
+
+        {activeTab === 'past' && (
+          <>
+
+            {completedBookings.map(
+              (booking, index) => (
+
+                <BookingCard
+                  key={`${booking.type}-${booking.id}`}
+                  booking={booking}
+                  index={index}
+                  onClick={() =>
+                    handleBookingClick(
+                      booking
+                    )
+                  }
+                />
+
+              )
+            )}
+
+            {refundedBookings.map(
+              (booking, index) => (
+
+                <BookingCard
+                  key={`refunded-${booking.type}-${booking.id}`}
+                  booking={booking}
+                  index={index}
+                  onClick={() =>
+                    handleBookingClick(
+                      booking
+                    )
+                  }
+                />
+
+              )
+            )}
+
+            {completedBookings.length === 0 &&
+              refundedBookings.length === 0 && (
+
+                <div className="text-center py-20">
+
+                  <Calendar
+                    className="w-12 h-12 mx-auto text-gray-400 mb-4"
+                  />
+
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    No past bookings
+                  </h3>
+
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Your completed and refunded bookings will appear here.
+                  </p>
+
+                </div>
+
+              )}
+
+          </>
+        )}
+
+        {/* ====================================================
+            SAVED PROVIDERS
+        ==================================================== */}
+
+        {activeTab === 'saved' && (
+          <motion.div
+            initial={{
+              opacity: 0
+            }}
+            animate={{
+              opacity: 1
+            }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+
+            {savedProviders.map(
+              (provider, index) => (
+
+                <motion.div
+                  key={provider.id}
+                  initial={{
+                    opacity: 0,
+                    scale: 0.9
+                  }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1
+                  }}
+                  transition={{
+                    delay: index * 0.1
+                  }}
+                >
+
+                  <Card
+                    variant="glass"
+                    className="overflow-hidden group cursor-pointer"
+                  >
+
+                    <div className="relative h-48 -m-6 mb-4 overflow-hidden">
+
+                      <img
+                        src={provider.image}
+                        alt={provider.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+
+                      <motion.button
+                        whileHover={{
+                          scale: 1.1
+                        }}
+                        whileTap={{
+                          scale: 0.9
+                        }}
+                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center"
+                      >
+
+                        <Heart
+                          className="w-4 h-4 text-red-500 fill-current"
+                        />
+
+                      </motion.button>
+
+                      <div className="absolute bottom-3 left-3">
+
+                        <div
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            provider.availability
+                              ? 'bg-green-500 text-white'
+                              : 'bg-gray-500 text-white'
+                          }`}
+                        >
+                          {provider.availability
+                            ? 'Available'
+                            : 'Busy'}
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    <div className="space-y-3">
+
+                      <div className="flex items-start justify-between">
+
+                        <div>
+
+                          <h4>
+                            {provider.name}
+                          </h4>
+
+                          <div className="flex items-center gap-1 mt-1">
+
+                            <span className="text-yellow-500 text-sm">
+                              ★
+                            </span>
+
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                              {provider.rating}
+                            </span>
+
+                          </div>
+
+                        </div>
+
+                        <div className="text-right">
+
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            from
+                          </p>
+
+                          <p className="text-[#3C82F6] dark:text-[#3758FF]">
+                            ₹{provider.price}
+                          </p>
+
+                        </div>
+
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+
+                        {provider.interests.map(
+                          (interest: string) => (
+
+                            <span
+                              key={interest}
+                              className="px-2 py-1 bg-[#F2F4F7] dark:bg-[#0A0F1F] rounded-full text-xs"
+                            >
+                              {interest}
+                            </span>
+
+                          )
+                        )}
+
+                      </div>
+
+                      <motion.button
+                        whileHover={{
+                          scale: 1.02
+                        }}
+                        whileTap={{
+                          scale: 0.98
+                        }}
+                        onClick={() =>
+                          onNavigate(
+                            'user-profile'
+                          )
+                        }
+                        className="w-full py-2 bg-gradient-to-r from-[#3C82F6] to-[#1F3C88] text-white rounded-full text-sm"
+                      >
+                        View Profile
+                      </motion.button>
+
+                    </div>
+
+                  </Card>
+
+                </motion.div>
+
+              )
+            )}
+
+          </motion.div>
+        )}
+
+      </div>
+
+      {/* ======================================================
+          REVIEW MODAL
+      ====================================================== */}
+
+      <AnimatePresence>
+
+        {showReviewModal &&
+          selectedBooking && (
+
+            <>
+
+              {/* Backdrop */}
+
+              <motion.div
+                initial={{
+                  opacity: 0
+                }}
+                animate={{
+                  opacity: 1
+                }}
+                exit={{
+                  opacity: 0
+                }}
+                onClick={() => {
+
+                  setShowReviewModal(false);
+                  setSelectedBooking(null);
+                  setSelectedRating(0);
+                  setReviewText('');
+                  setShowError(false);
+
+                }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+              />
+
+              {/* Modal */}
+
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    scale: 0.95,
+                    y: 20
+                  }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                    y: 0
+                  }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.95,
+                    y: 20
+                  }}
+                  className="w-full max-w-lg glass dark:glass-dark rounded-2xl border border-white/10 dark:border-gray-800/50 backdrop-blur-xl overflow-hidden"
+                >
+
+                  {/* Modal Header */}
+
+                  <div className="flex items-center justify-between p-6 border-b border-white/10 dark:border-gray-800/50">
+
+                    <div>
+
+                      <h3 className="text-xl mb-1">
+                        Write a Review
+                      </h3>
+
+                      <p className="text-sm text-gray-400">
+                        How was your experience with{" "}
+                        {selectedBooking.provider.name}?
+                      </p>
+
+                    </div>
+
+                    <button
+                      onClick={() => {
+
+                        setShowReviewModal(false);
+                        setSelectedBooking(null);
+                        setSelectedRating(0);
+                        setReviewText('');
+                        setShowError(false);
+
+                      }}
+                      className="w-8 h-8 rounded-lg hover:bg-white/5 transition-colors flex items-center justify-center flex-shrink-0"
+                    >
+
+                      <X
+                        className="w-5 h-5 text-gray-400"
+                      />
+
+                    </button>
+
+                  </div>
+
+                  {/* Modal Content */}
+
+                  <div className="p-6 space-y-6">
+
+                    {/* Provider Info */}
+
+                    <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 dark:bg-white/5">
+
+                      <img
+                        src={selectedBooking.provider.image}
+                        alt={selectedBooking.provider.name}
+                        className="w-16 h-16 rounded-xl object-cover"
+                      />
+
+                      <div className="flex-1">
+
+                        <h4 className="text-sm mb-1">
+                          {selectedBooking.provider.name}
+                        </h4>
+
+                        <p className="text-xs text-gray-400">
+                          {selectedBooking.type}
+                        </p>
+
+                        <p className="text-xs text-gray-500">
+                          {selectedBooking.date}
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                    {/* Rating Selector */}
+
+                    <div>
+
+                      <label className="text-sm text-gray-400 mb-3 block">
+                        Your Rating{" "}
+                        <span className="text-red-400">
+                          *
+                        </span>
+                      </label>
+
+                      <div className="flex items-center gap-1">
+
+                        {[1, 2, 3, 4, 5].map(
+                          (star) => (
+
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => {
+
+                                setSelectedRating(
+                                  star
+                                );
+
+                                setShowError(
+                                  false
+                                );
+
+                              }}
+                              onMouseEnter={() =>
+                                setHoveredRating(
+                                  star
+                                )
+                              }
+                              onMouseLeave={() =>
+                                setHoveredRating(
+                                  0
+                                )
+                              }
+                              className="transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded"
+                            >
+
+                              <Star
+                                className={`w-8 h-8 transition-colors ${
+                                  star <=
+                                  (
+                                    hoveredRating ||
+                                    selectedRating
+                                  )
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'fill-gray-700 text-gray-600 hover:text-gray-500'
+                                }`}
+                              />
+
+                            </button>
+
+                          )
+                        )}
+
+                      </div>
+
+                      {showError &&
+                        selectedRating === 0 && (
+
+                          <p className="text-xs text-red-400 mt-2">
+                            Please select a rating
+                          </p>
+
+                        )}
+
+                    </div>
+
+                    {/* Review Text */}
+
+                    <div>
+
+                      <label className="text-sm text-gray-400 mb-3 block">
+                        Your Review{" "}
+                        <span className="text-red-400">
+                          *
+                        </span>
+                      </label>
+
+                      <textarea
+                        value={reviewText}
+                        onChange={(e) => {
+
+                          if (
+                            e.target.value.length <=
+                            maxCharacters
+                          ) {
+
+                            setReviewText(
+                              e.target.value
+                            );
+
+                            setShowError(
+                              false
+                            );
+
+                          }
+
+                        }}
+                        placeholder="Share your experience..."
+                        rows={6}
+                        className={`w-full px-4 py-3 rounded-xl bg-gray-900/50 border-2 transition-all outline-none text-sm text-gray-200 placeholder-gray-500 resize-none ${
+                          showError &&
+                          reviewText.trim().length === 0
+                            ? 'border-red-500/50 focus:border-red-500'
+                            : 'border-white/10 focus:border-blue-500'
+                        }`}
+                      />
+
+                      <div className="flex items-center justify-between mt-2">
+
+                        {showError &&
+                          reviewText.trim().length === 0 && (
+
+                            <p className="text-xs text-red-400">
+                              Please write a review
+                            </p>
+
+                          )}
+
+                        <div className="ml-auto text-xs text-gray-500">
+                          {reviewText.length} /{" "}
+                          {maxCharacters}
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  {/* Modal Footer */}
+
+                  <div className="flex items-center gap-3 p-6 border-t border-white/10 dark:border-gray-800/50">
+
+                    <button
+                      onClick={() => {
+
+                        setShowReviewModal(false);
+                        setSelectedBooking(null);
+                        setSelectedRating(0);
+                        setReviewText('');
+                        setShowError(false);
+
+                      }}
+                      className="flex-1 px-6 py-3 rounded-xl glass dark:glass-dark hover:bg-white/5 transition-colors text-sm"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      onClick={
+                        handleReviewSubmit
+                      }
+                      className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:shadow-blue-500/25 transition-all text-sm font-medium"
+                    >
+                      Submit Review
+                    </button>
+
+                  </div>
+
+                </motion.div>
+
+              </div>
+
+            </>
+
+          )}
+
       </AnimatePresence>
+
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Bell, Calendar, MessageCircle, User, Settings, Users, DollarSign, Shield, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { Home, Bell, Calendar,  User, Settings, Users, DollarSign, Shield, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface NavigationProps {
@@ -34,14 +34,11 @@ export function Navigation({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
  const userNavItems: NavItem[] = [
-
-    { id: 'home', icon: Home, label: 'Home' },
-    { id: 'notifications', icon: Bell, label: 'Notifications', badge: notificationCount },
-    { id: 'bookings', icon: Calendar, label: 'Bookings' },
-    { id: 'chat', icon: MessageCircle, label: 'Chat', comingSoon: true },
-    { id: 'profile', icon: User, label: 'Profile', isProfile: true },
-  ];
-
+  { id: 'home', icon: Home, label: 'Home' },
+  { id: 'notifications', icon: Bell, label: 'Notifications', badge: notificationCount },
+  { id: 'bookings', icon: Calendar, label: 'Bookings' },
+  { id: 'profile', icon: User, label: 'Profile', isProfile: true },
+];
   const adminNavItems: NavItem[] = [
 
     { id: 'admin-dashboard', icon: Home, label: 'Dashboard' },
