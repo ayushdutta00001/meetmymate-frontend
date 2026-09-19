@@ -35,22 +35,27 @@ interface BlindDateBooking {
   user_id: string;
   user_name: string;
   user_avatar: string;
-  status: 'holding' | 'confirmed' | 'completed' | 'refunded';
+  status:
+    | 'pending_payment'
+    | 'pending'
+    | 'holding'
+    | 'confirmed'
+    | 'completed'
+    | 'cancelled'
+    | 'refunded';
   payment_status: 'paid' | 'pending' | 'refunded';
-  payment_id: string;
-  paid_at: string;
+  payment_id: string | null;
+  paid_at: string | null;
   amount: number;
   meeting_date: string | null;
   meeting_time: string | null;
   meeting_location: string | null;
- preferences: {
-  areas: string[];
-  date_range: string;
-  time_windows: string[];
-};
-
-
-
+  updated_at?: string | null;
+  preferences: {
+    areas: string[];
+    date_range: string;
+    time_windows: string[];
+  };
   created_at: string;
   flags: string[];
   audit_log: AuditEntry[];
@@ -70,29 +75,30 @@ function generateSmartFlags(
   b: BlindDateBooking,
   settings?: { autoFlagHours: number; highRiskHours: number }
 ): string[] {
-
   const flags: string[] = [...(b.flags || [])];
 
-  const now = new Date().getTime();
   const created = new Date(b.created_at).getTime();
-
-  const hoursSinceCreated = (now - created) / (1000 * 60 * 60);
+  const now = Date.now();
+  const hoursSinceCreated = Number.isFinite(created)
+    ? (now - created) / (1000 * 60 * 60)
+    : 0;
 
   const autoFlag = settings?.autoFlagHours ?? 24;
   const highRisk = settings?.highRiskHours ?? 48;
 
-  // 🚨 Delayed booking
-  if (b.status === 'holding' && hoursSinceCreated > autoFlag) {
+  const isHolding =
+    b.status === 'pending' ||
+    b.status === 'holding';
+
+  if (isHolding && hoursSinceCreated > autoFlag) {
     if (!flags.includes('Delayed')) flags.push('Delayed');
   }
 
-  // 🔥 Refund Risk
-  if (b.status === 'holding' && hoursSinceCreated > highRisk) {
+  if (isHolding && hoursSinceCreated > highRisk) {
     if (!flags.includes('Refund Likely')) flags.push('Refund Likely');
   }
 
-  // 💘 Match Ready
-  if (b.status === 'holding' && b.payment_status === 'paid') {
+  if (isHolding && b.payment_status === 'paid') {
     if (!flags.includes('Match Ready')) flags.push('Match Ready');
   }
 
@@ -181,13 +187,20 @@ function MetricCard({
 }
 
 // Budget Control Dropdown
-function BudgetControlDropdown({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
-  const stats = {
-    fixedPrice: 999,
-    totalBookings: 127,
-    totalRevenue: 126873,
-    refundPercentage: 8.2,
-  };
+function BudgetControlDropdown({
+  isOpen,
+  onToggle,
+  totalBookings,
+  totalRevenue,
+  refundPercentage,
+}: {
+  isOpen: boolean;
+  onToggle: () => void;
+  totalBookings: number;
+  totalRevenue: number;
+  refundPercentage: string | number;
+}) {
+  const fixedPrice = 399;
 
   return (
     <div className="relative">
@@ -215,12 +228,11 @@ function BudgetControlDropdown({ isOpen, onToggle }: { isOpen: boolean; onToggle
             </h3>
 
             <div className="space-y-4">
-              {/* Fixed Price */}
               <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-xl border border-gray-600/30">
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Blind Date Price (Fixed)</p>
                   <p className="text-2xl text-white" style={{ fontWeight: 700 }}>
-                    ₹{stats.fixedPrice}
+                    ₹{fixedPrice}
                   </p>
                 </div>
                 <div className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
@@ -228,34 +240,27 @@ function BudgetControlDropdown({ isOpen, onToggle }: { isOpen: boolean; onToggle
                 </div>
               </div>
 
-              {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-gray-700/20 rounded-xl">
                   <p className="text-xs text-gray-400 mb-1">Total Bookings</p>
                   <p className="text-xl text-white" style={{ fontWeight: 700 }}>
-                    {stats.totalBookings}
+                    {totalBookings.toLocaleString()}
                   </p>
                 </div>
                 <div className="p-3 bg-gray-700/20 rounded-xl">
                   <p className="text-xs text-gray-400 mb-1">Refund Rate</p>
                   <p className="text-xl text-orange-400" style={{ fontWeight: 700 }}>
-                    {stats.refundPercentage}%
+                    {refundPercentage}%
                   </p>
                 </div>
               </div>
 
-              {/* Total Revenue */}
               <div className="p-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-xl border border-green-500/30">
                 <p className="text-xs text-green-300 mb-1">Total Revenue Generated</p>
                 <p className="text-2xl text-white" style={{ fontWeight: 700 }}>
-                  ₹{stats.totalRevenue.toLocaleString()}
+                  ₹{Number(totalRevenue || 0).toLocaleString()}
                 </p>
               </div>
-
-              {/* Action Button */}
-              <button className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all text-sm shadow-lg shadow-blue-500/20" style={{ fontWeight: 600 }}>
-                View Revenue Breakdown
-              </button>
             </div>
           </motion.div>
         )}
@@ -295,8 +300,12 @@ function BookingActionDrawer({
     }
   };
 
-  const canEdit = booking.status === 'holding';
-  const canRefund = booking.status !== 'refunded' && booking.status !== 'completed';
+  const canEdit = booking.status === 'pending' || booking.status === 'holding';
+  const canRefund =
+    booking.status !== 'refunded' &&
+    booking.payment_status !== 'refunded' &&
+    booking.status !== 'completed' &&
+    booking.payment_status === 'paid';
 
   return (
     <motion.div
@@ -471,12 +480,12 @@ function BookingActionDrawer({
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-400">Payment ID</span>
-              <span className="text-xs text-gray-500">{booking.payment_id}</span>
+              <span className="text-xs text-gray-500 break-all">{booking.payment_id || 'N/A'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-400">Paid At</span>
               <span className="text-xs text-gray-500">
-                {new Date(booking.paid_at).toLocaleString('en-IN')}
+                {booking.paid_at ? new Date(booking.paid_at).toLocaleString('en-IN') : 'N/A'}
               </span>
             </div>
           </div>
@@ -558,45 +567,97 @@ function BookingActionDrawer({
 function normalizeBooking(
   raw: any,
   serviceSettings?: { autoFlagHours: number; highRiskHours: number }
-): BlindDateBooking
-{
-  const pref = raw.preferences ?? {};
+): BlindDateBooking {
+  const pref = raw?.preferences && typeof raw.preferences === 'object'
+    ? raw.preferences
+    : {};
 
-  return {
-    ...raw,
-   user_avatar:
-  raw.user_avatar ||
-  raw.avatar_url ||
-  raw.profile_image ||
-  raw.user?.avatar_url ||
-  raw.user?.profile_image ||
-  'https://placehold.co/200x200',
+  const user = raw?.users || raw?.user || {};
 
-    flags: generateSmartFlags(
-  {
-    ...(raw as BlindDateBooking),
-    flags: raw.flags ?? [],
-  },
-  serviceSettings
-),
+  const status = String(
+    raw?.status ??
+    (raw?.cancelled ? 'cancelled' : 'pending')
+  ).toLowerCase() as BlindDateBooking['status'];
 
+  const paymentStatus = String(
+    raw?.payment_status ?? 'pending'
+  ).toLowerCase() as BlindDateBooking['payment_status'];
 
-
-    audit_log: raw.audit_log ?? [],
-
+  const normalized: BlindDateBooking = {
+    id: String(raw?.id ?? ''),
+    user_id: String(raw?.user_id ?? ''),
+    user_name:
+      raw?.user_name ||
+      user?.name ||
+      user?.full_name ||
+      'User',
+    user_avatar:
+      raw?.user_avatar ||
+      raw?.avatar_url ||
+      raw?.profile_image ||
+      user?.profile_photo_url ||
+      user?.avatar_url ||
+      user?.profile_image ||
+      'https://placehold.co/200x200',
+    status,
+    payment_status: paymentStatus,
+    payment_id:
+      raw?.payment_id ||
+      raw?.razorpay_payment_id ||
+      raw?.payment_reference ||
+      null,
+    paid_at:
+      raw?.paid_at ||
+      raw?.payment_paid_at ||
+      null,
+    amount: Number(raw?.amount ?? raw?.total_amount ?? 0),
+    meeting_date: raw?.meeting_date ?? null,
+    meeting_time: raw?.meeting_time ?? null,
+    meeting_location:
+      raw?.meeting_location ??
+      raw?.location ??
+      null,
+    updated_at: raw?.updated_at ?? null,
+    created_at: raw?.created_at ?? new Date().toISOString(),
+    flags: Array.isArray(raw?.flags) ? raw.flags : [],
+    audit_log: Array.isArray(raw?.audit_log) ? raw.audit_log : [],
     preferences: {
-      areas: Array.isArray(pref.areas) ? pref.areas : [],
+      areas:
+        Array.isArray(pref?.areas)
+          ? pref.areas
+          : Array.isArray(raw?.preferred_locations)
+            ? raw.preferred_locations
+            : [],
       date_range:
-        typeof pref.date_range === 'string'
+        typeof pref?.date_range === 'string'
           ? pref.date_range
-          : pref.date_range
-          ? `${pref.date_range.from ?? ''} - ${pref.date_range.to ?? ''}`
-          : 'N/A',
-      time_windows: Array.isArray(pref.time_windows)
-        ? pref.time_windows
-        : [],
+          : pref?.date_range && typeof pref.date_range === 'object'
+            ? `${pref.date_range.from ?? ''} - ${pref.date_range.to ?? ''}`.replace(/^\s*-\s*$/, 'N/A')
+            : Array.isArray(raw?.availability) && raw.availability.length
+              ? raw.availability
+                  .map((item: any) => item?.day || '')
+                  .filter(Boolean)
+                  .join(', ')
+              : 'N/A',
+      time_windows:
+        Array.isArray(pref?.time_windows)
+          ? pref.time_windows
+          : Array.isArray(raw?.availability)
+            ? raw.availability.flatMap((item: any) =>
+                Array.isArray(item?.periods) ? item.periods : []
+              )
+            : [],
     },
   };
+
+  // Keep payment timing meaningful when the backend does not expose a paid_at field.
+  if (!normalized.paid_at && paymentStatus === 'paid') {
+    normalized.paid_at = raw?.created_at ?? null;
+  }
+
+  normalized.flags = generateSmartFlags(normalized, serviceSettings);
+
+  return normalized;
 }
 
 // Main Component
@@ -620,38 +681,66 @@ const loadBookings = async () => {
   try {
     setIsLoading(true);
 
+    // Bookings are the primary source. Do not let optional settings failure
+    // prevent the real booking data from loading.
     const res = await api.get<any[]>('admin_list_blind_date_bookings');
-// 🔥 Load AI settings (NEW)
-const settingsRes = await api.get<any>('admin_get_service_settings');
 
-if (settingsRes.success && settingsRes.data) {
-  setServiceSettings({
-    autoFlagHours: settingsRes.data.auto_flag_hours ?? 24,
-    highRiskHours: settingsRes.data.high_risk_hours ?? 48,
-  });
-}
+    console.log('BLIND DATE ADMIN BOOKINGS RESPONSE:', res);
 
-    console.log('CONTROL CENTER BOOKINGS:', res);
-console.log('RAW FIRST BOOKING 👉', res.data?.[0]);
+    if (!res?.success) {
+      console.error('Blind Date bookings API failed:', res?.error || res);
+      setBookings([]);
+    } else {
+      const rows = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray((res as any)?.data?.bookings)
+          ? (res as any).data.bookings
+          : Array.isArray((res as any)?.bookings)
+            ? (res as any).bookings
+            : [];
 
-    if (!res.success) return;
+      console.log('BLIND DATE BOOKING COUNT:', rows.length);
+      console.log('BLIND DATE FIRST BOOKING:', rows[0] || null);
 
-   const normalized = (res.data || []).map(r =>
-  normalizeBooking(r, serviceSettings)
-);
+      const normalized = rows.map((row: any) =>
+        normalizeBooking(row, serviceSettings)
+      );
 
+      setBookings(normalized);
+    }
 
-    setBookings(normalized);
-    
+    // Optional AI settings. Booking data must continue even if this endpoint fails.
+    try {
+      const settingsRes = await api.get<any>('admin_get_service_settings');
+
+      if (settingsRes?.success && settingsRes?.data) {
+        const nextSettings = {
+          autoFlagHours: Number(settingsRes.data.auto_flag_hours ?? 24),
+          highRiskHours: Number(settingsRes.data.high_risk_hours ?? 48),
+        };
+
+        setServiceSettings(nextSettings);
+
+        setBookings(prev =>
+          prev.map(booking => ({
+            ...booking,
+            flags: generateSmartFlags(booking, nextSettings),
+          }))
+        );
+      }
+    } catch (settingsError) {
+      console.warn('Blind Date service settings could not be loaded:', settingsError);
+    }
   } catch (err) {
-    console.error('Failed loading bookings', err);
+    console.error('Failed loading Blind Date admin bookings:', err);
+    setBookings([]);
   } finally {
     setIsLoading(false);
   }
 };
 
- useEffect(() => {
-  let channel: any;
+useEffect(() => {
+  let channel: ReturnType<typeof supabase.channel> | null = null;
 
   const initRealtime = async () => {
     await loadBookings();
@@ -665,60 +754,66 @@ console.log('RAW FIRST BOOKING 👉', res.data?.[0]);
           schema: 'public',
           table: 'blind_date_bookings',
         },
-        (payload) => {
-  console.log('Realtime booking change:', payload);
+        (payload: any) => {
+          console.log('Realtime Blind Date booking change:', payload);
 
-  const updated = normalizeBooking(payload.new ?? payload.old);
+          if (payload.eventType === 'DELETE') {
+            const deletedId = payload.old?.id;
+            if (deletedId) {
+              setBookings(prev =>
+                prev.filter(booking => booking.id !== deletedId)
+              );
+            }
+            return;
+          }
 
-  setBookings(prev => {
-    // DELETE
-    if (payload.eventType === 'DELETE') {
-      return prev.filter(b => b.id !== updated.id);
-    }
+          const incoming = normalizeBooking(
+            payload.new,
+            serviceSettings
+          );
 
-    // UPDATE or INSERT
-    const exists = prev.some(b => b.id === updated.id);
+          setBookings(prev => {
+            const exists = prev.some(
+              booking => booking.id === incoming.id
+            );
 
-    if (!exists) {
-      return [updated, ...prev];
-    }
+            if (!exists) {
+              return [incoming, ...prev];
+            }
 
-    return prev.map(b =>
-      b.id === updated.id ? { ...b, ...updated } : b
-    );
-  });
-}
-
+            return prev.map(booking =>
+              booking.id === incoming.id
+                ? { ...booking, ...incoming }
+                : booking
+            );
+          });
+        }
       )
-     .subscribe((status: any) => {
+      .subscribe((status: any) => {
+        console.log('Blind Date realtime channel status:', status);
 
-  
-  console.log('Realtime channel status:', status);
+        if (status === 'SUBSCRIBED') {
+          setRealtimeConnected(true);
+        }
 
-  if (status === 'SUBSCRIBED') {
-    setRealtimeConnected(true);
-  }
-
-  if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-    setRealtimeConnected(false);
-  }
-});
-
-
+        if (
+          status === 'CLOSED' ||
+          status === 'CHANNEL_ERROR' ||
+          status === 'TIMED_OUT'
+        ) {
+          setRealtimeConnected(false);
+        }
+      });
   };
 
   initRealtime();
 
   return () => {
-    if (channel) supabase.removeChannel(channel);
+    if (channel) {
+      supabase.removeChannel(channel);
+    }
   };
 }, []);
-
-
-supabase
-  .channel('test')
-  .subscribe(status => console.log('TEST STATUS:', status));
-
 
  const filteredBookings = useMemo(() => {
   let filtered = [...bookings];
@@ -766,112 +861,192 @@ supabase
 }, [bookings, statusFilter, paymentFilter, riskFilter, searchQuery]);
 
  // =============================
-// REAL ADMIN METRICS (NO DEMO)
+// REAL ADMIN METRICS
 // =============================
-const today = new Date().toISOString().slice(0, 10);
+const now = new Date();
+const todayKey = now.toISOString().slice(0, 10);
+const monthStart = new Date(
+  now.getFullYear(),
+  now.getMonth(),
+  1
+);
+
+const isRefundedBooking = (booking: BlindDateBooking) =>
+  booking.status === 'refunded' ||
+  booking.payment_status === 'refunded';
 
 const stats = {
-  holding: bookings.filter((b) => (b.status || '') === 'holding').length,
+  holding: bookings.filter(
+    b => b.status === 'pending' || b.status === 'holding'
+  ).length,
 
-  confirmed: bookings.filter((b) => (b.status || '') === 'confirmed').length,
+  confirmed: bookings.filter(
+    b => b.status === 'confirmed'
+  ).length,
 
-  completed: bookings.filter((b) => (b.status || '') === 'completed').length,
+  completed: bookings.filter(
+    b => b.status === 'completed'
+  ).length,
 
-  refunded: bookings.filter((b) => (b.status || '') === 'refunded').length,
+  refunded: bookings.filter(isRefundedBooking).length,
 
-  // 💰 Revenue Today (paid + confirmed today)
   revenueToday: bookings
-    .filter(
-      (b) =>
-        (b.payment_status || '') === 'paid' &&
-        (b.created_at || '').startsWith(today)
-    )
-    .reduce((sum, b) => sum + (b.amount || 0), 0),
+    .filter(b => {
+      if (b.payment_status !== 'paid') return false;
+      const paidDate = b.paid_at || b.created_at;
+      return String(paidDate || '').slice(0, 10) === todayKey;
+    })
+    .reduce((sum, b) => sum + Number(b.amount || 0), 0),
 
-  // 💰 Revenue Month
   revenueMonth: bookings
-    .filter((b) => (b.payment_status || '') === 'paid')
-    .reduce((sum, b) => sum + (b.amount || 0), 0),
+    .filter(b => {
+      if (b.payment_status !== 'paid') return false;
+      const paidDate = new Date(b.paid_at || b.created_at);
+      return !Number.isNaN(paidDate.getTime()) && paidDate >= monthStart;
+    })
+    .reduce((sum, b) => sum + Number(b.amount || 0), 0),
 
-  // ⏱️ Realistic dynamic placeholders
-  avgArrangeTime: bookings.length ? 'Live' : '-',
+  avgArrangeTime: (() => {
+    const durations = bookings
+      .map(b => {
+        const auditConfirmed = (b.audit_log || [])
+          .filter(entry =>
+            /meeting confirmed|arrangement confirmed/i.test(
+              String(entry.action || '')
+            )
+          )
+          .sort(
+            (a, z) =>
+              new Date(a.timestamp).getTime() -
+              new Date(z.timestamp).getTime()
+          )[0];
+
+        const start = new Date(b.created_at).getTime();
+        const end = auditConfirmed
+          ? new Date(auditConfirmed.timestamp).getTime()
+          : b.updated_at
+            ? new Date(b.updated_at).getTime()
+            : NaN;
+
+        if (
+          !Number.isFinite(start) ||
+          !Number.isFinite(end) ||
+          end < start
+        ) {
+          return null;
+        }
+
+        const hours = (end - start) / (1000 * 60 * 60);
+        return hours >= 0 ? hours : null;
+      })
+      .filter((hours): hours is number => hours !== null);
+
+    if (!durations.length) return '-';
+
+    const average =
+      durations.reduce((sum, hours) => sum + hours, 0) /
+      durations.length;
+
+    return `${average.toFixed(1)}h`;
+  })(),
 
   refundRate:
     bookings.length > 0
       ? (
-          (bookings.filter((b) => (b.status || '') === 'refunded').length /
+          (bookings.filter(isRefundedBooking).length /
             bookings.length) *
           100
         ).toFixed(1)
-      : 0,
+      : '0.0',
 };
 
   // Handle confirm arrangement
- const handleConfirmArrangement = (
+ const handleConfirmArrangement = async (
   bookingId: string,
   data: { meeting_date: string; meeting_time: string; meeting_location: string }
 ) => {
-  setBookings(prev =>
-    prev.map(b =>
-      b.id === bookingId
-        ? {
-            ...b,
-            status: 'confirmed',
-            meeting_date: data.meeting_date,
-            meeting_time: data.meeting_time,
-            meeting_location: data.meeting_location,
-            flags: generateSmartFlags({
-              ...b,
-              status: 'confirmed'
-            }),
-            audit_log: [
-              ...b.audit_log,
-              {
-                timestamp: new Date().toISOString(),
-                action: 'Meeting Confirmed',
-                admin: 'Admin A'
-              }
-            ]
-          }
-        : b
-    )
-  );
-};   // ✅ REQUIRED CLOSING
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+
+    if (!token) {
+      throw new Error('Admin session expired. Please sign in again.');
+    }
+
+    const response = await fetch(
+      'https://stvejpshtkqrseriekjv.supabase.co/functions/v1/admin_assign_blind_date',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          booking_id: bookingId,
+          meeting_date: data.meeting_date,
+          meeting_time: data.meeting_time,
+          meeting_location: data.meeting_location,
+        }),
+      }
+    );
+
+    const result = await response.json().catch(() => null);
+
+    console.log('ADMIN ASSIGN BLIND DATE RESPONSE:', result);
+
+    if (!response.ok || !result?.success) {
+      throw new Error(
+        result?.error ||
+        result?.message ||
+        'Failed to confirm the Blind Date arrangement.'
+      );
+    }
+
+    setSelectedBooking(null);
+    await loadBookings();
+  } catch (error: any) {
+    console.error('Confirm arrangement failed:', error);
+    alert(error?.message || 'Failed to confirm arrangement.');
+  }
+};
 
   // Handle refund
+  // Kept as a local UI update because this component does not currently
+  // have a verified admin refund Edge Function in the provided source.
   const handleRefund = (bookingId: string, reason: string) => {
-   setBookings(prev =>
-  prev.map(b =>
-    b.id === bookingId
-      ? {
-          ...b,
-          status: 'refunded',
-          payment_status: 'refunded',
-          flags: generateSmartFlags({
-            ...b,
-            status: 'refunded'
-          }),
-          audit_log: [
-            ...b.audit_log,
-            {
-              timestamp: new Date().toISOString(),
-              action: `Refund Issued - ${reason.replace('_', ' ')}`,
-              admin: 'Admin A'
+    setBookings(prev =>
+      prev.map(b =>
+        b.id === bookingId
+          ? {
+              ...b,
+              status: 'refunded',
+              payment_status: 'refunded',
+              flags: [],
+              audit_log: [
+                ...(b.audit_log || []),
+                {
+                  timestamp: new Date().toISOString(),
+                  action: `Refund Issued - ${reason.replace(/_/g, ' ')}`,
+                  admin: 'Admin',
+                },
+              ],
             }
-          ]
-        }
-      : b
-  )
-);
+          : b
+      )
+    );
+    setSelectedBooking(null);
   };
+
   // Get row color
   const getRowBorderColor = (status: string) => {
     switch (status) {
+      case 'pending':
       case 'holding':
         return 'border-l-4 border-yellow-500';
       case 'confirmed':
         return 'border-l-4 border-green-500';
       case 'refunded':
+      case 'cancelled':
         return 'border-l-4 border-orange-500';
       default:
         return 'border-l-4 border-gray-700';
@@ -919,9 +1094,18 @@ const stats = {
               <BudgetControlDropdown
                 isOpen={budgetDropdownOpen}
                 onToggle={() => setBudgetDropdownOpen(!budgetDropdownOpen)}
+                totalBookings={bookings.length}
+                totalRevenue={bookings
+                  .filter(b => b.payment_status === 'paid')
+                  .reduce((sum, b) => sum + Number(b.amount || 0), 0)}
+                refundPercentage={stats.refundRate}
               />
               {/* Refresh button */}
-              <button className="p-3 rounded-xl bg-gray-800/50 border border-gray-700/50 hover:bg-gray-700/50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <button
+                onClick={loadBookings}
+                className="p-3 rounded-xl bg-gray-800/50 border border-gray-700/50 hover:bg-gray-700/50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                title="Refresh Blind Date data"
+              >
                 <RefreshCw className="w-5 h-5 text-gray-400" />
               </button>
             </div>
@@ -970,7 +1154,6 @@ const stats = {
             value={`₹${stats.revenueToday.toLocaleString()}`}
             icon={DollarSign}
             color="bg-green-500"
-            trend={{ value: '+12%', up: true }}
           />
           <MetricCard
             label="Revenue This Month"
@@ -1010,9 +1193,11 @@ const stats = {
                 style={{ fontWeight: 500 }}
               >
                 <option>All</option>
+                <option>Pending</option>
                 <option>Holding</option>
                 <option>Confirmed</option>
                 <option>Completed</option>
+                <option>Cancelled</option>
                 <option>Refunded</option>
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
@@ -1069,7 +1254,17 @@ const stats = {
       </thead>
 
       <tbody className="divide-y divide-gray-800">
-        {filteredBookings.map((booking) => (
+        {filteredBookings.length === 0 ? (
+          <tr>
+            <td
+              colSpan={8}
+              className="px-6 py-16 text-center text-sm text-gray-500"
+            >
+              No Blind Date bookings found.
+            </td>
+          </tr>
+        ) : (
+          filteredBookings.map((booking) => (
           <motion.tr
             key={booking.id}
             layout
@@ -1145,12 +1340,12 @@ const stats = {
             {/* Created */}
             <td className="px-6 py-4">
               <p className="text-xs text-gray-500">
-                {new Date(booking.created_at).toLocaleDateString('en-IN', {
+                {booking.created_at ? new Date(booking.created_at).toLocaleDateString('en-IN', {
                   day: 'numeric',
                   month: 'short',
                   hour: '2-digit',
                   minute: '2-digit',
-                })}
+                }) : 'N/A'}
               </p>
             </td>
 
@@ -1167,7 +1362,8 @@ const stats = {
               </button>
             </td>
           </motion.tr>
-        ))}
+          ))
+        )}
       </tbody>
     </table>
   </div>
