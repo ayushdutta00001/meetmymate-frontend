@@ -105,7 +105,10 @@ const { data: requestData, error: insertError } = await supabase
   .single();
 
 if (insertError || !requestData) {
-  console.error("Insert failed:", insertError);
+ console.error(
+  "Insert failed:",
+  JSON.stringify(insertError, null, 2)
+);
   alert("Something went wrong.");
   return;
 }
