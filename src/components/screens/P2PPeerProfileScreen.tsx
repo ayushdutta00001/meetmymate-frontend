@@ -5,9 +5,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle, MapPin, Briefcase, Award, Clock, Send } from 'lucide-react';
 import { BackButton } from '../ui/BackButton';
 import { mapP2PProfile } from '../../lib/mappers/p2pProfileMapper';
-
 interface P2PPeerProfileScreenProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, param?: string | number) => void;
   onBack: () => void;
   peerId: string | null;
 }
@@ -346,7 +345,14 @@ if (loading || !profile) {
           className="flex gap-3"
         >
           <button
-            onClick={() => onNavigate('p2p-request-meeting')}
+           onClick={() => {
+  if (!peerId) {
+    console.error('Cannot request meeting: missing peerId');
+    return;
+  }
+
+  onNavigate('p2p-request-meeting', peerId);
+}}
             className="flex-1 px-6 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-all flex items-center justify-center gap-2"
           >
             <Send className="w-5 h-5" />

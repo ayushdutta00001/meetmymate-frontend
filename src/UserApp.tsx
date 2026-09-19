@@ -430,7 +430,11 @@ if (
     setPreviousScreen(currentScreen);
   }
 
-  setCurrentScreen(screen);
+ if (screen === 'p2p-request-meeting' && param) {
+  setSelectedPeerId(param as string);
+}
+
+setCurrentScreen(screen);
 };
 const openP2PFlow = async () => {
   try {
