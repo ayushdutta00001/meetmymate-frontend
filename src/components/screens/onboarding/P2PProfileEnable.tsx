@@ -848,28 +848,7 @@ if (error) {
     className="w-full mt-2 p-3 rounded-lg"
   />
 </div>
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="flex gap-4 pt-4"
-            >
-              <button
-                type="button"
-                onClick={handleSkip}
-                className="px-6 py-4 rounded-xl border-2 border-gray-300 dark:border-gray-700 bg-fuchsia-800 dark:bg-slate-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium"
-              >
-                Not Now
-              </button>
-              <button
-                type="button"
-                onClick={handleActivate}
-                className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white transition-all font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
-              >
-                Activate Profile
-              </button>
-            </motion.div>
+            
           </div>
 
           {/* Preview Section - Right Side (Sticky) */}
@@ -896,6 +875,23 @@ if (error) {
 />
 </div>
 </motion.div>
+
+{/* Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex gap-4 pt-4"
+            >
+             
+              <button
+                type="button"
+                onClick={handleActivate}
+                className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white transition-all font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
+              >
+                Activate Profile
+              </button>
+            </motion.div>
           </div>
         </div>
       </div>

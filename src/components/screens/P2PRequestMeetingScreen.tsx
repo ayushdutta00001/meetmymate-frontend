@@ -83,16 +83,7 @@ if (existing) {
     return;
   }
 
-await supabase.from("notifications").insert({
-  user_id: peerId,
-  sender_id: user.id,
-  type: "p2p_request",
-  module: "p2p",
-  reference_id: existing.id,
-  title: "Updated P2P Request",
-  message: "User updated their request",
-  is_read: false
-});
+
 
 } else {
   // Insert new request
@@ -119,34 +110,6 @@ if (insertError || !requestData) {
   return;
 }
 
-const { data: senderProfile } = await supabase
-  .from("users")
-  .select("name, profile_photo_url")
-  .eq("id", user.id)
-  .single();
-
-const { error: notifError } = await supabase
-  .from("notifications")
-  .insert({
-    user_id: peerId,
-    sender_id: user.id,
-    type: "p2p_request",
-    module: "p2p",
-    reference_id: requestData.id,
-    title: "New P2P Request",
-    message: `${senderProfile?.name || "Someone"} wants to collaborate on ${formData.purpose}`,
-    link: "p2p-requests-hub",
-    is_read: false,
-    metadata: {
-      sender_name: senderProfile?.name,
-      sender_avatar: senderProfile?.profile_photo_url,
-      purpose: formData.purpose,
-    }
-  });
-
-if (notifError) {
-  console.error("❌ Notification insert failed:", notifError);
-}
 }
     console.log("✅ Request sent successfully");
 

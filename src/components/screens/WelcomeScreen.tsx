@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Button } from '../Button';
 import { Logo } from '../Logo';
-import { Users, Heart, Briefcase } from 'lucide-react';
+import { Heart, ArrowLeftRight } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onSignIn: () => void;
@@ -11,9 +11,16 @@ interface WelcomeScreenProps {
 
 export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
   const features = [
-    { icon: Users, label: 'Rent a Friend', color: 'from-blue-500 to-purple-500' },
-    { icon: Heart, label: 'Blind Dates', color: 'from-pink-500 to-red-500' },
-    { icon: Briefcase, label: 'Business Meetups', color: 'from-green-500 to-teal-500' },
+    {
+      icon: Heart,
+      label: 'Blind Dates',
+      color: 'from-pink-500 to-rose-500',
+    },
+    {
+      icon: ArrowLeftRight,
+      label: 'PartnerUp',
+      color: 'from-violet-500 to-purple-600',
+    },
   ];
 
   return (
@@ -27,6 +34,7 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
         }}
         transition={{ duration: 8, repeat: Infinity }}
       />
+
       <motion.div
         className="absolute -bottom-20 -right-20 w-96 h-96 bg-[#FFF27C]/20 rounded-full blur-3xl"
         animate={{
@@ -38,6 +46,8 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
+
+        {/* Logo */}
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -47,6 +57,7 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
           <Logo size="large" />
         </motion.div>
 
+        {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -56,6 +67,7 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
           <h2 className="text-white mb-4">
             Connect, Meet, Grow
           </h2>
+
           <p className="text-white/80">
             Your time is valuable. Book meaningful connections for friendship, romance, or business.
           </p>
@@ -70,6 +82,7 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
         >
           {features.map((feature, index) => {
             const Icon = feature.icon;
+
             return (
               <motion.div
                 key={index}
@@ -77,12 +90,17 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 + index * 0.1 }}
                 whileHover={{ scale: 1.05, y: -5 }}
-                className={`glass rounded-2xl p-6 flex flex-col items-center gap-3 min-w-[140px]`}
+                className="glass rounded-2xl p-6 flex flex-col items-center gap-3 min-w-[140px]"
               >
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center`}>
+                <div
+                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center`}
+                >
                   <Icon className="w-8 h-8 text-white" />
                 </div>
-                <span className="text-white text-sm text-center">{feature.label}</span>
+
+                <span className="text-white text-sm text-center">
+                  {feature.label}
+                </span>
               </motion.div>
             );
           })}
@@ -103,6 +121,7 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
           >
             Create Account
           </Button>
+
           <Button
             variant="glass"
             size="large"

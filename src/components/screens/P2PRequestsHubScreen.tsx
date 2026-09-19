@@ -867,13 +867,6 @@ export function P2PRequestsHubScreen({
                     request.id
                   ];
 
-                const isFullyBooked =
-                  !!meeting &&
-                  meeting.payment_user_a ===
-                    true &&
-                  meeting.payment_user_b ===
-                    true;
-
                 const statusConfig =
                   getStatusConfig(
                     request.status
@@ -1012,78 +1005,42 @@ export function P2PRequestsHubScreen({
                         </div>
 
                         <div className="flex gap-2 mt-4 flex-wrap">
-                          {/* BOOK NOW */}
-                          {request.status ===
-                            'accepted' &&
-                            meeting?.status ===
-                              'pending_payment' && (
-                              <motion.button
-                                whileHover={{
-                                  scale: 1.02,
-                                }}
-                                whileTap={{
-                                  scale: 0.98,
-                                }}
-                                onClick={() => {
-                                  /*
-                                   * IMPORTANT:
-                                   * Carry BOTH IDs.
-                                   *
-                                   * peerId:
-                                   *   identifies the other user
-                                   *
-                                   * request.id:
-                                   *   identifies the exact booking request
-                                   */
-                                  onSelectPeer(
-                                    request.peerId
-                                  );
+                          {/* BOOK NOW / VIEW BOOKING STATUS */}
+{request.status === 'accepted' && !!meeting && (
+  <>
+    {/* USER A HAS NOT PAID */}
+    {meeting.payment_user_a !== true && (
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          onSelectPeer(request.peerId);
+          setSelectedRequestId(request.id);
+          onNavigate('p2p-peer-payment');
+        }}
+        className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-500/30"
+      >
+        Book Now
+      </motion.button>
+    )}
 
-                                  setSelectedRequestId(
-                                    request.id
-                                  );
-
-                                  onNavigate(
-                                    'p2p-peer-payment'
-                                  );
-                                }}
-                                className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-500/30"
-                              >
-                                Book Now
-                              </motion.button>
-                            )}
-
-                          {/* VIEW STATUS */}
-                          {request.status ===
-                            'accepted' &&
-                            !!meeting &&
-                            meeting.status !==
-                              'pending_payment' && (
-                              <motion.button
-                                whileHover={{
-                                  scale: 1.02,
-                                }}
-                                whileTap={{
-                                  scale: 0.98,
-                                }}
-                                onClick={() => {
-                                  setSelectedMeetingId(
-                                    meeting.id
-                                  );
-
-                                  setSelectedRequestId(
-                                    request.id
-                                  );
-
-                                  onNavigate(
-                                    'p2p-meeting-confirmation'
-                                  );
-                                }}
-                                className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow-lg"
-                              >
-                                Booking Status
-                              </motion.button>
-                            )}
+    {/* USER A HAS PAID */}
+    {meeting.payment_user_a === true && (
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          setSelectedMeetingId(meeting.id);
+          setSelectedRequestId(request.id);
+          onNavigate('p2p-meeting-confirmation');
+        }}
+        className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow-lg"
+      >
+        View Booking Status
+      </motion.button>
+    )}
+  </>
+)}
 
                           {/* Meeting Date */}
                           {request.status ===
@@ -1109,7 +1066,7 @@ export function P2PRequestsHubScreen({
                             )}
 
                           {/* REJECTED */}
-                          {request.status ===
+                          {String(request.status) ===
                             'rejected' && (
                             <button
                               disabled
@@ -1421,62 +1378,60 @@ export function P2PRequestsHubScreen({
                             </>
                           )}
 
-                          {/* ACCEPTED + PAYMENT PENDING */}
-                          {request.status ===
-                            'accepted' &&
-                            meeting?.status ===
-                              'pending_payment' && (
-                              <div className="w-full">
-                                <div className="mb-3 p-3 rounded-xl bg-blue-500/10 border border-blue-400/30">
-                                  <p className="text-sm text-blue-200">
-                                    Request accepted. The requester must complete the payment within 24 hours.
-                                  </p>
+                         {/* BOOKING ACTIONS - USER B */}
+{request.status === 'accepted' && !!meeting && (
+  <div className="w-full">
+    {/* PAYMENT INFORMATION - ONLY WHILE USER B STILL NEEDS TO PAY */}
+    {meeting.payment_user_b !== true && (
+      <div className="mb-3 p-3 rounded-xl bg-blue-500/10 border border-blue-400/30">
+        <p className="text-sm text-blue-200">
+          Request accepted. Complete your payment within 24 hours to book the meeting.
+        </p>
 
-                                  {meeting.payment_deadline && (
-                                    <p className="text-xs text-blue-300 mt-1">
-                                      Payment deadline:{' '}
-                                      {new Date(
-                                        meeting.payment_deadline
-                                      ).toLocaleString(
-                                        'en-IN'
-                                      )}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            )}
+        {meeting.payment_deadline && (
+          <p className="text-xs text-blue-300 mt-1">
+            Payment deadline:{' '}
+            {new Date(
+              meeting.payment_deadline
+            ).toLocaleString('en-IN')}
+          </p>
+        )}
+      </div>
+    )}
 
-                          {/* ACCEPTED + ACTIVE BOOKING */}
-                          {request.status ===
-                            'accepted' &&
-                            meeting &&
-                            meeting.status !==
-                              'pending_payment' && (
-                              <motion.button
-                                whileHover={{
-                                  scale: 1.02,
-                                }}
-                                whileTap={{
-                                  scale: 0.98,
-                                }}
-                                onClick={() => {
-                                  setSelectedMeetingId(
-                                    meeting.id
-                                  );
+    {/* USER B HAS NOT PAID YET */}
+    {meeting.payment_user_b !== true && (
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          onSelectPeer(request.peerId);
+          setSelectedRequestId(request.id);
+          onNavigate('p2p-peer-payment');
+        }}
+        className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-500/30"
+      >
+        Book Now
+      </motion.button>
+    )}
 
-                                  setSelectedRequestId(
-                                    request.id
-                                  );
-
-                                  onNavigate(
-                                    'p2p-meeting-confirmation'
-                                  );
-                                }}
-                                className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow-lg"
-                              >
-                                View Booking Status
-                              </motion.button>
-                            )}
+    {/* USER B HAS ALREADY PAID */}
+    {meeting.payment_user_b === true && (
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          setSelectedMeetingId(meeting.id);
+          setSelectedRequestId(request.id);
+          onNavigate('p2p-meeting-confirmation');
+        }}
+        className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow-lg"
+      >
+        View Booking Status
+      </motion.button>
+    )}
+  </div>
+)}
 
                           {/* MEETING DATE */}
                           {request.status ===

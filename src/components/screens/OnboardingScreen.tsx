@@ -1,9 +1,7 @@
-import { supabase } from '../../supabase';
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '../Button';
-import { Users, Heart, Briefcase, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Heart, ArrowLeftRight, ChevronRight, ChevronLeft } from 'lucide-react';
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -11,38 +9,38 @@ interface OnboardingScreenProps {
 
 export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
-const [isCompleting, setIsCompleting] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+
   const slides = [
-    {
-      icon: Users,
-      title: 'Rent a Friend',
-      description: 'Connect with amazing people for activities, events, or just hanging out. Make new friends on your schedule.',
-      color: 'from-blue-500 to-purple-500',
-      image: 'https://images.unsplash.com/photo-1763429642850-aa2de401e3e0?w=800',
-    },
     {
       icon: Heart,
       title: 'Blind Date',
-      description: 'Experience the thrill of mystery dates. Let our AI match you with compatible partners for meaningful connections.',
+      description:
+        'Experience the thrill of mystery dates. Let us match you with compatible people for meaningful connections.',
       color: 'from-pink-500 to-red-500',
-      image: 'https://images.unsplash.com/photo-1615500025837-cf3a8716c83d?w=800',
+      image:
+        'https://images.unsplash.com/photo-1615500025837-cf3a8716c83d?w=800',
     },
     {
-      icon: Briefcase,
-      title: 'Business Meetup',
-      description: 'Network with professionals in your industry. Schedule meetings with mentors, partners, or potential clients.',
-      color: 'from-green-500 to-teal-500',
-      image: 'https://images.unsplash.com/photo-1496180470114-6ef490f3ff22?w=800',
+      icon: ArrowLeftRight,
+      title: 'PartnerUp',
+      description:
+        'Meet like-minded people for meaningful professional and collaborative connections. Find partners, co-founders, mentors, and more.',
+      color: 'from-violet-500 to-purple-600',
+      image:
+        'https://images.unsplash.com/photo-1496180470114-6ef490f3ff22?w=800',
     },
   ];
 
- const markOnboardingComplete = async () => {
-  onComplete();
-};
+  const markOnboardingComplete = async () => {
+    onComplete();
+  };
+
   const nextSlide = () => {
     if (currentSlide < slides.length - 1) {
       setCurrentSlide(currentSlide + 1);
     } else {
+      setIsCompleting(true);
       markOnboardingComplete();
     }
   };
@@ -63,7 +61,7 @@ const [isCompleting, setIsCompleting] = useState(false);
         {slides.map((_, index) => (
           <motion.div
             key={index}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
               index === currentSlide
                 ? 'w-8 bg-gradient-to-r from-[#3C82F6] to-[#1F3C88]'
                 : 'w-2 bg-gray-300 dark:bg-gray-700'
@@ -81,7 +79,11 @@ const [isCompleting, setIsCompleting] = useState(false);
             initial={{ x: 300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            transition={{
+              type: 'spring',
+              stiffness: 300,
+              damping: 30,
+            }}
             className="absolute inset-0 flex flex-col items-center justify-center px-6"
           >
             {/* Image */}
@@ -97,8 +99,12 @@ const [isCompleting, setIsCompleting] = useState(false);
                   alt={slide.title}
                   className="w-full h-full object-cover"
                 />
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className={`absolute top-8 left-1/2 -translate-x-1/2 w-24 h-24 rounded-3xl bg-gradient-to-br ${slide.color} flex items-center justify-center shadow-2xl`}>
+
+                <div
+                  className={`absolute top-8 left-1/2 -translate-x-1/2 w-24 h-24 rounded-3xl bg-gradient-to-br ${slide.color} flex items-center justify-center shadow-2xl`}
+                >
                   <Icon className="w-12 h-12 text-white" />
                 </div>
               </div>
@@ -110,15 +116,22 @@ const [isCompleting, setIsCompleting] = useState(false);
                   y: [0, -10, 0],
                   rotate: [0, 10, 0],
                 }}
-                transition={{ duration: 3, repeat: Infinity }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                }}
               />
+
               <motion.div
                 className={`absolute -bottom-4 -left-4 w-20 h-20 rounded-2xl bg-gradient-to-br ${slide.color} opacity-20 blur-xl`}
                 animate={{
                   y: [0, 10, 0],
                   rotate: [0, -10, 0],
                 }}
-                transition={{ duration: 4, repeat: Infinity }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                }}
               />
             </motion.div>
 
@@ -130,6 +143,7 @@ const [isCompleting, setIsCompleting] = useState(false);
               className="text-center max-w-md"
             >
               <h2 className="mb-4">{slide.title}</h2>
+
               <p className="text-gray-600 dark:text-gray-400">
                 {slide.description}
               </p>
@@ -156,24 +170,21 @@ const [isCompleting, setIsCompleting] = useState(false);
               Back
             </Button>
           )}
-         <Button
-  variant="primary"
-  size="large"
-  fullWidth
-  onClick={nextSlide}
-  disabled={isCompleting}
 
-           
+          <Button
+            variant="primary"
+            size="large"
+            fullWidth
+            onClick={nextSlide}
+            disabled={isCompleting}
           >
             {isCompleting
-  ? 'Completing...'
-  : currentSlide < slides.length - 1
-    ? 'Next'
-    : 'Get Started'}
+              ? 'Completing...'
+              : currentSlide < slides.length - 1
+              ? 'Next'
+              : 'Get Started'}
           </Button>
         </div>
-        
-       
       </motion.div>
     </div>
   );

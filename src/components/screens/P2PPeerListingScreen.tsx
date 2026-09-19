@@ -1,8 +1,15 @@
-import { supabase } from '../../supabase';
-import { useEffect } from 'react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Filter, MapPin, Briefcase, X, Users, TrendingUp, Sparkles } from 'lucide-react';
+import {
+  Search,
+  X,
+  Users,
+  Sparkles,
+  Inbox,
+  Pencil,
+} from 'lucide-react';
+
+import { supabase } from '../../supabase';
 import { P2PProfileCard, P2PProfile } from '../cards/P2PProfileCard';
 import { BackButton } from '../ui/BackButton';
 
@@ -12,479 +19,507 @@ interface P2PPeerListingScreenProps {
   onSelectPeer: (peerId: string) => void;
 }
 
-export function P2PPeerListingScreen({ onNavigate, onBack, onSelectPeer }: P2PPeerListingScreenProps) {
+const INDUSTRIES = [
+  'All',
+  'Technology',
+  'Finance',
+  'Healthcare',
+  'E-commerce',
+  'Education',
+  'Real Estate',
+];
+
+export function P2PPeerListingScreen({
+  onNavigate,
+  onBack,
+  onSelectPeer,
+}: P2PPeerListingScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedIndustry, setSelectedIndustry] = useState('all');
-  const [selectedRole, setSelectedRole] = useState('all');
-const [peers, setPeers] = useState<P2PProfile[]>([]);
-const [loading, setLoading] = useState(true);
-const [myProfileActive, setMyProfileActive] = useState(false);
+  const [selectedIndustry, setSelectedIndustry] = useState('All');
 
+  const [peers, setPeers] = useState<P2PProfile[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const industries = ['all', 'Technology', 'Finance', 'Healthcare', 'E-commerce', 'Education', 'Real Estate'];
-  const roles = ['all', 'Founder', 'Co-Founder', 'Investor', 'Advisor', 'Technical Partner', 'Business Partner'];
+  /*
+   * ============================================================
+   * LOAD ACTIVE P2P PROFILES
+   * ============================================================
+   */
 
- 
-useEffect(() => {
-  const loadPeers = async () => {
-    try {
-      setLoading(true);
+  useEffect(() => {
+    const loadPeers = async () => {
+      try {
+        setLoading(true);
 
-      // get session user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-const { data: sessionData } = await supabase.auth.getSession();
-const currentUserId = sessionData.session?.user?.id;
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-const { data: myProfile, error: myProfileError } = await supabase
-  .from("p2p_profiles")
-  .select("status, is_active")
-  .eq("user_id", currentUserId)
-  .maybeSingle();
+        if (!user) {
+          setPeers([]);
+          return;
+        }
 
-if (myProfileError) {
-  console.error("My P2P profile load error:", myProfileError);
-} else if (myProfile) {
-  const isCurrentlyActive =
-    myProfile.status === "active" &&
-    myProfile.is_active === true;
+        const currentUserId = user.id;
 
-  setMyProfileActive(isCurrentlyActive);
-}
-      // fetch active p2p profiles
-     const { data, error } = await supabase
-  .from("p2p_profiles")
-  .select(`
-    id,
-    user_id,
-    headline,
-    bio,
-    industry,
-    skills,
-    interests,
-    users (
-      id,
-      name,
-      city,
-      profile_photo_url
-    )
-  `)
-  .eq("status", "active")
-  .eq("is_active", true);
-        //.neq("user_id", user.id); // hide current user
+        const { data, error } = await supabase
+          .from('p2p_profiles')
+          .select(`
+            id,
+            user_id,
+            headline,
+            bio,
+            industry,
+            skills,
+            interests,
+            users (
+              id,
+              name,
+              city,
+              profile_photo_url
+            )
+          `)
+          .eq('status', 'active')
+          .eq('is_active', true);
 
-      if (error) {
-        console.error("Load peers error:", error);
-        return;
+        if (error) {
+          console.error('Load peers error:', error);
+          setPeers([]);
+          return;
+        }
+
+        console.log('RAW P2P DATA:', data);
+
+        const filtered = (data ?? []).filter(
+          (item: any) => item.user_id !== currentUserId
+        );
+
+        const mappedPeers: P2PProfile[] = filtered.map(
+          (item: any) => ({
+            id: item.id,
+            user_id: item.user_id,
+            name: item.users?.name ?? 'User',
+            avatar: item.users?.profile_photo_url ?? '',
+            role: item.headline ?? '',
+            location: item.users?.city ?? '',
+            expertise: item.skills ?? [],
+            bio: item.bio ?? '',
+            industry: item.industry ?? '',
+            experience: '',
+            verified: true,
+            availability: 'in-person',
+            skills: item.skills ?? [],
+            lookingFor: item.interests ?? [],
+            isOnline: false,
+          })
+        );
+
+        setPeers(mappedPeers);
+      } catch (error) {
+        console.error('Peer load failed:', error);
+        setPeers([]);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      console.log("RAW P2P DATA:", data);
+    loadPeers();
+  }, []);
 
-      // 🔥 transform DB → UI format
-    const filtered = data.filter(
-  (item: any) => item.user_id !== currentUserId
-);
+  /*
+   * ============================================================
+   * SEARCH + INDUSTRY FILTER
+   * ============================================================
+   */
 
-const mappedPeers: P2PProfile[] = filtered.map((item: any) => ({
-  id: item.id,
-  user_id: item.user_id,
-  name: item.users?.name ?? "User",
-  avatar: item.users?.profile_photo_url ?? "",
-  role: item.headline ?? "",
-  location: item.users?.city ?? "",
-  expertise: item.skills ?? [],
-  bio: item.bio ?? "",
-  industry: item.industry ?? "",
-  experience: "",
-  verified: true,
-  availability: "in-person",
-  skills: item.skills ?? [],
-  lookingFor: item.interests ?? [],
-  isOnline: false,
-}));
-      setPeers(mappedPeers);
+  const filteredPeers = peers.filter((peer) => {
+    const query = searchQuery.trim().toLowerCase();
 
-    } catch (err) {
-      console.error("Peer load failed:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const matchesSearch =
+      !query ||
+      peer.name.toLowerCase().includes(query) ||
+      peer.role.toLowerCase().includes(query) ||
+      peer.industry.toLowerCase().includes(query) ||
+      peer.bio.toLowerCase().includes(query) ||
+      peer.expertise.some((item) =>
+        item.toLowerCase().includes(query)
+      );
 
-  loadPeers();
-}, []);
+    const matchesIndustry =
+      selectedIndustry === 'All' ||
+      peer.industry === selectedIndustry;
 
-
-  // Filter peers
-  const filteredPeers = peers.filter(peer => {
-    const matchesSearch = peer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         peer.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         peer.bio.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesIndustry = selectedIndustry === 'all' || peer.industry === selectedIndustry;
-    const matchesRole = selectedRole === 'all' || peer.role.includes(selectedRole);
-    return matchesSearch && matchesIndustry && matchesRole;
+    return matchesSearch && matchesIndustry;
   });
 
- const handleViewProfile = (profileUserId: string) => {
-  console.log("OPEN PROFILE FOR USER:", profileUserId);
-  onSelectPeer(profileUserId);
-  onNavigate("p2p-peer-profile");
-};
+  /*
+   * ============================================================
+   * ACTIONS
+   * ============================================================
+   */
 
- const handleSendRequest = (profileUserId: string) => {
-  console.log("➡️ Go to Request Meeting screen with user:", profileUserId);
+  const handleViewProfile = (profileUserId: string) => {
+    console.log(
+      'OPEN PROFILE FOR USER:',
+      profileUserId
+    );
 
-  onSelectPeer(profileUserId); // store selected user
-  onNavigate("p2p-request-meeting"); // open meeting screen
-};
- 
-const handleToggleProfileListing = async () => {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    onSelectPeer(profileUserId);
+    onNavigate('p2p-peer-profile');
+  };
 
-    if (!user) return;
+  const handleConnect = (profileUserId: string) => {
+    console.log(
+      '➡️ Go to Request Meeting screen with user:',
+      profileUserId
+    );
 
-   // ==============================
-// UNLIST
-// ==============================
-if (myProfileActive) {
-  const { error } = await supabase
-    .from("p2p_profiles")
-    .update({
-      status: "inactive",
-      is_active: false,
-    })
-    .eq("user_id", user.id);
+    onSelectPeer(profileUserId);
+    onNavigate('p2p-request-meeting');
+  };
 
-  if (error) {
-    console.error("❌ Unlist failed:", error);
-    return;
-  }
+  /*
+   * ============================================================
+   * UI
+   * ============================================================
+   */
 
-  setMyProfileActive(false);
+  return (
+    <div className="min-h-screen bg-[#F4F6FA] dark:bg-[#0A0F1F] pb-24 md:pb-8 md:pr-24">
 
-  console.log("✅ Profile unlisted");
+      {/* ====================================================== */}
+      {/* HEADER */}
+      {/* ====================================================== */}
 
-  // Stay on the P2P listing screen.
-  // The button will automatically change to
-  // "List My Profile".
-  return;
-}
-
-    // =========================
-    // LIST PROFILE AGAIN
-    // =========================
-
-    const { error } = await supabase
-      .from("p2p_profiles")
-      .update({
-        status: "active",
-        is_active: true,
-        expires_at: null,
-      })
-      .eq("user_id", user.id);
-
-    if (error) {
-      console.error("❌ Listing failed:", error);
-      return;
-    }
-
-    setMyProfileActive(true);
-
-    console.log("✅ Profile listed permanently");
-
-  } catch (err) {
-    console.error("❌ Toggle listing crashed:", err);
-  }
-};
-
-return(
-    <div className="min-h-screen bg-fuchsia-700 dark:bg-[#0A0F1F] pb-24 md:pb-8 md:pr-24">
-    {/* Header */}
-<motion.div
-  initial={{ opacity: 0, y: -20 }}
-  animate={{ opacity: 1, y: 0 }}
-  className="border-b border-gray-200 dark:border-gray-800"
->
-  <div className="max-w-7xl mx-auto px-6 py-6">
-  {/* Top Row */}
-  <div className="flex items-center justify-between">
-    <BackButton onClick={onBack} />
-
-    {/* Right Side Actions */}
-    <div className="flex items-center gap-3">
-      {/* EDIT BUTTON */}
-      <motion.button
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.97 }}
-        onClick={() => onNavigate("p2p-profile-enable")}
-        className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden bg-gradient-to-r from-[#2563EB] via-[#3C82F6] to-[#4F46E5] shadow-lg"
       >
-        Edit Profile
-      </motion.button>
- <motion.button
- whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.97 }}
- onClick={() => onNavigate("p2p-requests-hub")}
-  className="px-4 py-2 rounded-lg bg-sky-500 text-white text-sm font-semibold hover:bg-sky-600"
->
-  My Requests
-</motion.button>
-      {/* UNLIST BUTTON */}
-     <motion.button
-  whileHover={{ scale: 1.03 }}
-  whileTap={{ scale: 0.97 }}
-  onClick={handleToggleProfileListing}
-  className={`px-4 py-2 rounded-lg text-white text-sm font-semibold ${
-    myProfileActive
-      ? "bg-red-600 hover:bg-red-700"
-      : "bg-green-600 hover:bg-green-700"
-  }`}
->
-  {myProfileActive ? "Unlist My Profile" : "List My Profile"}
-</motion.button>
-    </div>
-  </div>
+        {/* Decorative glow */}
+        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-white/10 blur-3xl pointer-events-none" />
 
-  {/* Title Area */}
-  <div className="text-center mt-6">
-    <motion.div
-      initial={{ scale: 0.9 }}
-      animate={{ scale: 1 }}
-      className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20"
-    >
-      <Users className="w-10 h-10 text-white" />
-    </motion.div>
+        <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-indigo-300/10 blur-3xl pointer-events-none" />
 
-    <h1 className="mb-2">Find Your Business Match</h1>
+        <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
 
-    <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-      Connect with co-founders, investors, and business partners
-    </p>
-  </div>
-  </div>
-</motion.div>
-   
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        {/* Stats Banner */}
+          {/* Top row */}
+          <div className="flex items-center gap-3">
+
+            {/* Back button */}
+            <div className="[&>button]:!border-white/20 [&>button]:!bg-white/10 [&>button]:!text-white [&>button]:hover:!bg-white/20">
+              <BackButton onClick={onBack} />
+            </div>
+
+            {/* Page title */}
+            <div className="flex-1 min-w-0">
+              <h1
+                className="text-white text-lg md:text-xl font-extrabold leading-tight"
+                style={{ fontFamily: "'Outfit', sans-serif" }}
+              >
+                PartnerUp
+              </h1>
+
+              <p className="text-white/70 text-xs md:text-sm mt-0.5">
+                Discover people for meaningful professional connections
+              </p>
+            </div>
+
+            {/* Header actions */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+
+              {/* Edit Profile */}
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() =>
+                  onNavigate('p2p-profile-enable')
+                }
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 border border-white/15 text-white text-xs font-bold backdrop-blur-sm transition-all"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+
+                <span className="hidden sm:inline">
+                  Edit Profile
+                </span>
+
+                <span className="sm:hidden">
+                  Edit
+                </span>
+              </motion.button>
+
+              {/* My Requests */}
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() =>
+                  onNavigate('p2p-requests-hub')
+                }
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-400 text-white hover:bg-blue-500 text-xs font-bold shadow-md transition-all"
+              >
+                <Inbox className="w-3.5 h-3.5" />
+
+                <span className=" text-2xl text-blue-700 hidden sm:inline">
+                  My Requests
+                </span>
+
+                <span className="sm:hidden">
+                  Requests
+                </span>
+              </motion.button>
+
+            </div>
+          </div>
+
+          {/* Header information */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mt-4 flex items-center gap-2"
+          >
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/10">
+              <Users className="w-3.5 h-3.5 text-white/80" />
+
+              <span className="text-[11px] font-semibold text-white/85">
+                {peers.length} active profiles
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/10">
+              <Sparkles className="w-3.5 h-3.5 text-white/80" />
+
+              <span className="text-[11px] font-semibold text-white/85">
+                Find your next connection
+              </span>
+            </div>
+          </motion.div>
+
+        </div>
+      </motion.header>
+
+      {/* ====================================================== */}
+      {/* MAIN CONTENT */}
+      {/* ====================================================== */}
+
+      <main className="relative max-w-7xl mx-auto px-4 md:px-6">
+
+        {/* ==================================================== */}
+        {/* SEARCH */}
+        {/* ==================================================== */}
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-3 gap-4 mb-6"
+          className="pt-5"
         >
-          <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-slate-900 border border-blue-100 dark:border-blue-800 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{filteredPeers.length}</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Active Profiles</p>
-              </div>
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-white dark:from-green-900/20 dark:to-slate-900 border border-green-100 dark:border-green-800 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{filteredPeers.filter(p => p.isOnline).length}</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Online Now</p>
-              </div>
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-slate-900 border border-purple-100 dark:border-purple-800 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{industries.length - 1}</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Industries</p>
-              </div>
-            </div>
+          <div className="relative">
+
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+
+            <input
+              type="text"
+              placeholder="Search by name, role, industry or expertise..."
+              value={searchQuery}
+              onChange={(e) =>
+                setSearchQuery(e.target.value)
+              }
+              className="w-full pl-12 pr-12 py-3.5 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:border-violet-500 dark:focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all"
+            />
+
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+
           </div>
         </motion.div>
 
-        {/* Search and Filter */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-6"
-        >
-          <div className="flex gap-3 mb-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name, role, or expertise..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
+        {/* ==================================================== */}
+        {/* INDUSTRY FILTER CHIPS */}
+        {/* ==================================================== */}
 
-            {/* Filter Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-6 py-3.5 rounded-xl border-2 transition-all flex items-center gap-2 font-medium ${
-                showFilters
-                  ? 'border-blue-500 bg-cyan-600 dark:bg-teal-600 text-blue-600 dark:text-blue-400 shadow-lg shadow-blue-500/20'
-                  : 'border-gray-200 dark:border-b-cyan-600 bg-cyan-600 dark:bg-teal-600 hover:border-blue-500 shadow-sm'
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.16 }}
+          className="flex gap-2 overflow-x-auto pt-4 pb-2"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {INDUSTRIES.map((industry) => (
+            <button
+              key={industry}
+              onClick={() =>
+                setSelectedIndustry(industry)
+              }
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                selectedIndustry === industry
+                  ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm'
+                  : 'bg-violet-400 dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-blue-400 dark:hover:border-blue-500/50 shadow-sm'
               }`}
             >
-              <Filter className="w-5 h-5" />
-              Filters
-              {(selectedIndustry !== 'all' || selectedRole !== 'all') && (
-                <span className="w-2 h-2 rounded-full bg-cyan-600 dark:bg-blue-400"></span>
-              )}
-            </motion.button>
-          </div>
-
-          {/* Filter Options */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="p-6 rounded-xl bg-gradient-to-br from-white to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20 border-2 border-gray-200 dark:border-gray-700 shadow-lg"
-              >
-                <div className="grid md:grid-cols-2 gap-4">
-                  {/* Industry Filter */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      Industry
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={selectedIndustry}
-                        onChange={(e) => setSelectedIndustry(e.target.value)}
-                        className="w-full px-4 py-3 pr-10 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all appearance-none cursor-pointer"
-                      >
-                        {industries.map(industry => (
-                          <option key={industry} value={industry}>
-                            {industry === 'all' ? 'All Industries' : industry}
-                          </option>
-                        ))}
-                      </select>
-                      <Briefcase className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  {/* Role Filter */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      Role
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={selectedRole}
-                        onChange={(e) => setSelectedRole(e.target.value)}
-                        className="w-full px-4 py-3 pr-10 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all appearance-none cursor-pointer"
-                      >
-                        {roles.map(role => (
-                          <option key={role} value={role}>
-                            {role === 'all' ? 'All Roles' : role}
-                          </option>
-                        ))}
-                      </select>
-                      <Users className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Clear Filters */}
-                {(selectedIndustry !== 'all' || selectedRole !== 'all') && (
-                  <motion.button
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    onClick={() => {
-                      setSelectedIndustry('all');
-                      setSelectedRole('all');
-                    }}
-                    className="mt-4 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center gap-2 text-sm font-medium"
-                  >
-                    <X className="w-4 h-4" />
-                    Clear All Filters
-                  </motion.button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+              {industry}
+            </button>
+          ))}
         </motion.div>
 
-        {/* Results Count */}
+        {/* ==================================================== */}
+        {/* RESULT HEADER */}
+        {/* ==================================================== */}
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mb-4"
+          transition={{ delay: 0.22 }}
+          className="flex items-center justify-between py-4"
         >
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            <span className="font-semibold text-gray-900 dark:text-gray-100">{filteredPeers.length}</span> professional{filteredPeers.length !== 1 ? 's' : ''} found
-          </p>
-        </motion.div>
-{loading && (
-  <p className="text-center text-gray-400 py-10">
-    Loading active professionals...
-  </p>
-)}
-        {/* Profiles Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence>
-            {filteredPeers.map((peer, index) => (
-             <P2PProfileCard
-              
-  key={peer.user_id}
-  profile={peer}
-  onViewProfile={() => handleViewProfile(peer.user_id)}
-  onSendRequest={() => handleSendRequest(peer.user_id)}
-
-                delay={0.1 + index * 0.05}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {/* No Results */}
-        {filteredPeers.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-16"
-          >
-            <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <Search className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              No Results Found
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Try adjusting your search or filters
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Discover professionals
             </p>
+
+            <p className="text-base font-bold text-gray-900 dark:text-white">
+              {filteredPeers.length}{' '}
+              professional
+              {filteredPeers.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+
+          {selectedIndustry !== 'All' && (
             <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedIndustry('all');
-                setSelectedRole('all');
-              }}
-              className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-all font-medium shadow-lg shadow-blue-500/30"
+              onClick={() =>
+                setSelectedIndustry('All')
+              }
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
             >
-              Clear All
+              Clear filter
             </button>
+          )}
+        </motion.div>
+
+        {/* ==================================================== */}
+        {/* LOADING */}
+        {/* ==================================================== */}
+
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-20"
+          >
+            <div className="w-10 h-10 rounded-full border-4 border-blue-100 dark:border-blue-900 border-t-blue-600 animate-spin" />
+
+            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              Loading active professionals...
+            </p>
           </motion.div>
         )}
-      </div>
+
+        {/* ==================================================== */}
+        {/* PROFILE GRID */}
+        {/* ==================================================== */}
+
+        {!loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            <AnimatePresence mode="popLayout">
+              {filteredPeers.length > 0 ? (
+                filteredPeers.map((peer, index) => (
+                  <P2PProfileCard
+                    key={peer.id}
+                    profile={peer}
+                    onViewProfile={handleViewProfile}
+                    onSendRequest={handleConnect}
+                    delay={0.05 * index}
+                  />
+                ))
+              ) : (
+                <motion.div
+                  key="empty"
+                  initial={{
+                    opacity: 0,
+                    y: 20,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  exit={{
+                    opacity: 0,
+                  }}
+                  className="col-span-full flex flex-col items-center justify-center py-20 text-center"
+                >
+                  <div className="w-20 h-20 rounded-3xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-5">
+                    <Search className="w-9 h-9 text-gray-400" />
+                  </div>
+
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    No professionals found
+                  </h3>
+
+                  <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mb-6">
+                    Try changing your search or selecting a different industry.
+                  </p>
+
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedIndustry('All');
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-violet-500/20 hover:from-violet-600 hover:to-purple-700 transition-all"
+                  >
+                    Clear Search & Filter
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+          </div>
+        )}
+
+        {/* ==================================================== */}
+        {/* BOTTOM AI MATCH CARD */}
+        {/* ==================================================== */}
+
+        {!loading && filteredPeers.length > 0 && (
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 12,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              delay: 0.6,
+            }}
+            className="mt-8 mb-4 flex items-center gap-3 p-4 rounded-2xl border border-dashed border-blue-300 dark:border-blue-700/50 bg-blue-50/70 dark:bg-blue-900/10"
+          >
+            <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/15 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
+                Find your partner and make meaningful connections.
+              </p>
+
+              <p className="text-xs text-blue-600/80 dark:text-blue-400/70 mt-0.5">
+                Wish you the best in your search!
+              </p>
+            </div>
+
+            
+          </motion.div>
+        )}
+
+      </main>
     </div>
   );
 }

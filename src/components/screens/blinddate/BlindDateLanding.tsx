@@ -56,12 +56,7 @@ export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) 
 >
   Book a Blind Date 
 </button>
-          <button
-            onClick={() => onNavigate('blind-date-how-it-works')}
-            className="w-full py-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all"
-          >
-            How It Works
-          </button>
+         
         </motion.div>
         <br />
         <br />
