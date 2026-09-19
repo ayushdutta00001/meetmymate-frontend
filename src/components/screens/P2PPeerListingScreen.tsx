@@ -96,7 +96,7 @@ export function P2PPeerListingScreen({
 
         const mappedPeers: P2PProfile[] = filtered.map(
           (item: any) => ({
-            id: item.id,
+            id: item.user_id,
             user_id: item.user_id,
             name: item.users?.name ?? 'User',
             avatar: item.users?.profile_photo_url ?? '',
@@ -431,7 +431,7 @@ export function P2PPeerListingScreen({
               {filteredPeers.length > 0 ? (
                 filteredPeers.map((peer, index) => (
                   <P2PProfileCard
-                    key={peer.id}
+                    key={peer.user_id}
                     profile={peer}
                     onViewProfile={handleViewProfile}
                     onSendRequest={handleConnect}
