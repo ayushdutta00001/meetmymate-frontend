@@ -177,6 +177,9 @@ export default function UserApp() {
   const [navigationHistory, setNavigationHistory] = useState<Screen[]>([]);
   const navigationHistoryRef = useRef<Screen[]>([]);
 const deviceBackInitializedRef = useRef(false);
+
+const deviceScreenStackRef = useRef<Screen[]>([currentScreen]);
+const deviceBackActionRef = useRef(false);
  const [openingCompleted, setOpeningCompleted] = useState(() => {
   return sessionStorage.getItem('meetmymate_opening_completed') === 'true';
 });
@@ -490,6 +493,11 @@ const openP2PFlow = async () => {
     navigationHistoryRef.current = history;
 
     if (last) {
+      // Tell the device-screen stack that this is a BACK action,
+      // so it must remove the current screen instead of adding
+      // the destination as a new forward screen.
+      deviceBackActionRef.current = true;
+
       setCurrentScreen(last);
     }
 
@@ -498,8 +506,44 @@ const openP2PFlow = async () => {
 };
 
 /* =========================================================
-   DEVICE / BROWSER BACK BUTTON SUPPORT
-   Uses the existing navigationHistory system.
+   DEVICE BACK — SCREEN STACK
+   Tracks every currentScreen change, including screens
+   changed directly with setCurrentScreen().
+   ========================================================= */
+
+useEffect(() => {
+  const stack = deviceScreenStackRef.current;
+
+  // First screen
+  if (stack.length === 0) {
+    stack.push(currentScreen);
+    return;
+  }
+
+  // No screen change
+  if (stack[stack.length - 1] === currentScreen) {
+    return;
+  }
+
+  // This screen change was caused by Back.
+  // Remove the previous/current entry instead of adding
+  // a new forward entry.
+  if (deviceBackActionRef.current) {
+    deviceBackActionRef.current = false;
+
+    if (stack.length > 1) {
+      stack.pop();
+    }
+
+    return;
+  }
+
+  // Normal forward navigation.
+  stack.push(currentScreen);
+}, [currentScreen]);
+
+/* =========================================================
+   DEVICE / BROWSER BACK BUTTON
    ========================================================= */
 
 useEffect(() => {
@@ -509,8 +553,8 @@ useEffect(() => {
 
   deviceBackInitializedRef.current = true;
 
-  // Create one browser-history guard entry.
-  // The URL does not change.
+  // Browser-history guard.
+  // URL stays exactly the same.
   window.history.pushState(
     {
       ...(window.history.state || {}),
@@ -521,17 +565,43 @@ useEffect(() => {
   );
 
   const handleDeviceBack = () => {
-    // No internal app history left.
-    // Allow the browser/device to continue leaving the page.
-    if (navigationHistoryRef.current.length === 0) {
+    const stack = deviceScreenStackRef.current;
+
+    // Nothing inside the app to go back to.
+    // Allow the browser/device to leave the website.
+    if (stack.length <= 1) {
       return;
     }
 
-    // Use the app's existing back navigation.
-    handleBack();
+    // Remove current screen.
+    stack.pop();
 
-    // Re-create the guard entry so the next device Back
-    // can again be handled by the application.
+    const previousScreen = stack[stack.length - 1];
+
+    if (!previousScreen) {
+      return;
+    }
+
+    // Tell the screen tracker this change came from Back.
+    deviceBackActionRef.current = true;
+
+    // Keep the existing in-app navigation history synchronized.
+    setNavigationHistory((prev) => {
+      const history = [...prev];
+
+      if (history.length > 0) {
+        history.pop();
+      }
+
+      navigationHistoryRef.current = history;
+
+      return history;
+    });
+
+    setCurrentScreen(previousScreen);
+
+    // Re-create the guard so the next physical Back
+    // is captured by the application again.
     window.history.pushState(
       {
         ...(window.history.state || {}),
