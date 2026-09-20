@@ -167,7 +167,7 @@ export type Screen =
 export default function UserApp() {
  const { user, isAuthenticated, isLoading, signOut } = useAuth();
 
- const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
+ const [currentScreen, setCurrentScreenState] = useState<Screen>(() => {
   const savedScreen = sessionStorage.getItem('meetmymate_current_screen');
 
   return savedScreen ? (savedScreen as Screen) : 'opening';
@@ -176,10 +176,15 @@ export default function UserApp() {
   const [previousScreen, setPreviousScreen] = useState<Screen>('home');
   const [navigationHistory, setNavigationHistory] = useState<Screen[]>([]);
   const navigationHistoryRef = useRef<Screen[]>([]);
-const deviceBackInitializedRef = useRef(false);
+  // Kept for existing flow state; browser history is the actual Back source of truth.
 
-const deviceScreenStackRef = useRef<Screen[]>([currentScreen]);
-const deviceBackActionRef = useRef(false);
+  /* =========================================================
+     BROWSER / DEVICE BACK NAVIGATION
+     The browser history is the source of truth for screen back.
+     ========================================================= */
+  const browserHistoryInitializedRef = useRef(false);
+  const browserScreenIndexRef = useRef(0);
+
  const [openingCompleted, setOpeningCompleted] = useState(() => {
   return sessionStorage.getItem('meetmymate_opening_completed') === 'true';
 });
@@ -199,6 +204,114 @@ const [profileStatus, setProfileStatus] = useState<
   'unknown' | 'none' | 'draft' | 'complete'
 >('unknown');
 const [isFinishingOnboarding, setIsFinishingOnboarding] = useState(false);
+
+/* =========================================================
+   SCREEN CHANGE HELPERS
+   - pushScreen: normal user navigation; creates a browser entry.
+   - replaceScreen: redirects/transitions that should replace
+     the current entry (auth/onboarding/logout).
+   ========================================================= */
+const changeScreen = (screen: Screen, mode: 'push' | 'replace' = 'push') => {
+  if (screen === currentScreen) {
+    return;
+  }
+
+  if (browserHistoryInitializedRef.current) {
+    const currentState = window.history.state;
+    const currentIndex =
+      currentState?.meetMyMateApp === true &&
+      Number.isInteger(currentState?.screenIndex)
+        ? currentState.screenIndex
+        : browserScreenIndexRef.current;
+
+    const nextIndex = mode === 'push' ? currentIndex + 1 : currentIndex;
+
+    const nextState = {
+      ...(currentState || {}),
+      meetMyMateApp: true,
+      screen,
+      screenIndex: nextIndex,
+    };
+
+    if (mode === 'replace') {
+      window.history.replaceState(
+        nextState,
+        '',
+        window.location.href
+      );
+    } else {
+      window.history.pushState(
+        nextState,
+        '',
+        window.location.href
+      );
+    }
+
+    browserScreenIndexRef.current = nextIndex;
+  }
+
+  setCurrentScreenState(screen);
+};
+
+const pushScreen = (screen: Screen) => {
+  changeScreen(screen, 'push');
+};
+
+const replaceScreen = (screen: Screen) => {
+  changeScreen(screen, 'replace');
+};
+
+  /* =========================================================
+     INITIALIZE + LISTEN TO BROWSER / DEVICE BACK
+     ========================================================= */
+  useEffect(() => {
+    if (browserHistoryInitializedRef.current) {
+      return;
+    }
+
+    // Make the currently visible React screen browser-history index 0.
+    window.history.replaceState(
+      {
+        ...(window.history.state || {}),
+        meetMyMateApp: true,
+        screen: currentScreen,
+        screenIndex: 0,
+      },
+      '',
+      window.location.href
+    );
+
+    browserScreenIndexRef.current = 0;
+    browserHistoryInitializedRef.current = true;
+
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+
+      // A history entry outside our app belongs to the browser/page itself.
+      if (
+        !state?.meetMyMateApp ||
+        typeof state.screen !== 'string'
+      ) {
+        return;
+      }
+
+      const targetScreen = state.screen as Screen;
+      const targetIndex = Number.isInteger(state.screenIndex)
+        ? state.screenIndex
+        : 0;
+
+      browserScreenIndexRef.current = targetIndex;
+
+      // Browser/device Back is now the navigation source of truth.
+      setCurrentScreenState(targetScreen);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
 useEffect(() => {
   sessionStorage.setItem('meetmymate_current_screen', currentScreen);
@@ -273,14 +386,14 @@ useEffect(() => {
   if (isLoading) return;
   // 🔐 PASSWORD RECOVERY MODE
 if (user && window.location.hash.includes("type=recovery")) {
-  setCurrentScreen("reset-password");
+  replaceScreen("reset-password");
 }
 
 if (
   profileStatus === 'draft' &&
   !['profile-setup', 'onboarding'].includes(currentScreen)
 ) {
-  setCurrentScreen('profile-setup');
+  replaceScreen('profile-setup');
 }
 
   // ----------------------------------
@@ -293,13 +406,13 @@ if (isLoading) return;
 if (!user && isAuthenticated === false) {
   if (currentScreen === 'opening') {
     if (openingCompleted) {
-      setCurrentScreen('terms');
+      replaceScreen('terms');
     }
     return;
   }
 
   if (!publicScreens.includes(currentScreen)) {
-    setCurrentScreen('welcome');
+    replaceScreen('welcome');
   }
 
   return;
@@ -315,7 +428,7 @@ if (!user && isAuthenticated === false) {
 
 if (profileStatus === 'draft') {
   if (!['profile-setup', 'onboarding'].includes(currentScreen)) {
-    setCurrentScreen('profile-setup');
+    replaceScreen('profile-setup');
   }
   return;
 }
@@ -326,7 +439,7 @@ if (profileStatus === 'draft') {
   // ----------------------------------
   if (profileStatus === 'complete') {
   if (currentScreen === 'opening' && openingCompleted) {
-    setCurrentScreen('home');
+    replaceScreen('home');
   }
 }
 }, [isLoading, user, profileStatus, currentScreen, openingCompleted]);
@@ -346,7 +459,7 @@ async function checkProfile() {
 
   if (!authUser) {
     setProfileStatus('none');
-    setCurrentScreen('welcome');
+    replaceScreen('welcome');
     return;
   }
 
@@ -377,7 +490,7 @@ async function checkProfile() {
   // 3️⃣ Invalid session (auth user exists but no DB rows)
   await supabase.auth.signOut();
   setProfileStatus('none');
-  setCurrentScreen('welcome');
+  replaceScreen('welcome');
 }
 
 
@@ -400,11 +513,6 @@ const navigate = (screen: Screen, param?: string | number) => {
   });  
   // ✅ P2P profile gating
   if (screen === 'p2p-peer-listing' && !isP2PProfileEnabled) {
-    setNavigationHistory((prev) => {
-  const next = [...prev, currentScreen];
-  navigationHistoryRef.current = next;
-  return next;
-});
     openP2PFlow();
     return;
   }
@@ -446,7 +554,7 @@ if (
   setSelectedPeerId(param as string);
 }
 
-setCurrentScreen(screen);
+pushScreen(screen);
 };
 const openP2PFlow = async () => {
   try {
@@ -468,171 +576,71 @@ const openP2PFlow = async () => {
 
     if (data) {
       // ✅ USER ALREADY LISTED → skip enable screen
-      setCurrentScreen("p2p-peer-listing");
+      pushScreen("p2p-peer-listing");
     } else {
       // ✅ NEW USER OR UNLISTED
-      setCurrentScreen("p2p-profile-enable");
+      pushScreen("p2p-profile-enable");
     }
   } catch (err) {
     console.error(err);
   }
 };
   /* =========================
-     BACK NAVIGATION (FIXED)
+     BACK NAVIGATION
+     Browser history controls both the UI Back button and
+     the Android/device Back button.
   ========================= */
- const handleBack = () => {
-  setNavigationHistory((prev) => {
-    if (prev.length === 0) {
-      navigationHistoryRef.current = [];
-      return prev;
-    }
+  const handleBack = () => {
+    const state = window.history.state;
+    const screenIndex =
+      state?.meetMyMateApp === true &&
+      Number.isInteger(state?.screenIndex)
+        ? state.screenIndex
+        : 0;
 
-    const history = [...prev];
-    const last = history.pop();
-
-    navigationHistoryRef.current = history;
-
-    if (last) {
-      // Tell the device-screen stack that this is a BACK action,
-      // so it must remove the current screen instead of adding
-      // the destination as a new forward screen.
-      deviceBackActionRef.current = true;
-
-      setCurrentScreen(last);
-    }
-
-    return history;
-  });
-};
-
-/* =========================================================
-   DEVICE BACK — SCREEN STACK
-   Tracks every currentScreen change, including screens
-   changed directly with setCurrentScreen().
-   ========================================================= */
-
-useEffect(() => {
-  const stack = deviceScreenStackRef.current;
-
-  // First screen
-  if (stack.length === 0) {
-    stack.push(currentScreen);
-    return;
-  }
-
-  // No screen change
-  if (stack[stack.length - 1] === currentScreen) {
-    return;
-  }
-
-  // This screen change was caused by Back.
-  // Remove the previous/current entry instead of adding
-  // a new forward entry.
-  if (deviceBackActionRef.current) {
-    deviceBackActionRef.current = false;
-
-    if (stack.length > 1) {
-      stack.pop();
-    }
-
-    return;
-  }
-
-  // Normal forward navigation.
-  stack.push(currentScreen);
-}, [currentScreen]);
-
-/* =========================================================
-   DEVICE / BROWSER BACK BUTTON
-   ========================================================= */
-
-useEffect(() => {
-  if (deviceBackInitializedRef.current) {
-    return;
-  }
-
-  deviceBackInitializedRef.current = true;
-
-  // Browser-history guard.
-  // URL stays exactly the same.
-  window.history.pushState(
-    {
-      ...(window.history.state || {}),
-      meetMyMateBackGuard: true,
-    },
-    '',
-    window.location.href
-  );
-
-  const handleDeviceBack = () => {
-    const stack = deviceScreenStackRef.current;
-
-    // Nothing inside the app to go back to.
-    // Allow the browser/device to leave the website.
-    if (stack.length <= 1) {
+    if (
+      browserHistoryInitializedRef.current &&
+      screenIndex > 0
+    ) {
+      window.history.back();
       return;
     }
 
-    // Remove current screen.
-    stack.pop();
-
-    const previousScreen = stack[stack.length - 1];
-
-    if (!previousScreen) {
-      return;
-    }
-
-    // Tell the screen tracker this change came from Back.
-    deviceBackActionRef.current = true;
-
-    // Keep the existing in-app navigation history synchronized.
+    // Fallback only if browser history has not been initialized.
     setNavigationHistory((prev) => {
-      const history = [...prev];
-
-      if (history.length > 0) {
-        history.pop();
+      if (prev.length === 0) {
+        navigationHistoryRef.current = [];
+        return prev;
       }
+
+      const history = [...prev];
+      const last = history.pop();
 
       navigationHistoryRef.current = history;
 
+      if (last) {
+        setCurrentScreenState(last);
+      }
+
       return history;
     });
-
-    setCurrentScreen(previousScreen);
-
-    // Re-create the guard so the next physical Back
-    // is captured by the application again.
-    window.history.pushState(
-      {
-        ...(window.history.state || {}),
-        meetMyMateBackGuard: true,
-      },
-      '',
-      window.location.href
-    );
   };
 
-  window.addEventListener('popstate', handleDeviceBack);
-
-  return () => {
-    window.removeEventListener('popstate', handleDeviceBack);
-  };
-}, []);
 
 
   /* =========================
      AUTH FLOW HANDLERS
   ========================= */
   const handleSignIn = () => {
-    setCurrentScreen('home');
+    replaceScreen('home');
   };
 
   const handleSignUp = () => {
-    setCurrentScreen('profile-setup');
+    pushScreen('profile-setup');
   };
 
   const handleProfileSetupComplete = () => {
-    setCurrentScreen('onboarding');
+    pushScreen('onboarding');
   };
 const handleOnboardingComplete = async () => {
 
@@ -705,7 +713,7 @@ const handleOnboardingComplete = async () => {
 
     // 4️⃣ Finish
    setProfileStatus('complete');
-setCurrentScreen('home');
+replaceScreen('home');
 
 // 🔥 NOW users row exists → save FCM token correctly
 await registerPushNotifications();
@@ -721,7 +729,7 @@ await registerPushNotifications();
 
 const handleLogout = async () => {
   await signOut();
-  setCurrentScreen('welcome');
+  replaceScreen('welcome');
 };
 
   /* =========================
@@ -1022,12 +1030,12 @@ const showFooter =
   <P2PPeerPaymentScreen
     peerId={selectedPeerId}
     requestId={selectedRequestId}
-    onBack={() => setCurrentScreen('p2p-requests-hub')}
+    onBack={handleBack}
     onNavigate={(page) => {
       if (page === 'p2p-meeting-confirmation') {
-        setCurrentScreen('p2p-meeting-confirmation');
+        pushScreen('p2p-meeting-confirmation');
       } else {
-        setCurrentScreen(page);
+        pushScreen(page);
       }
     }}
     setSelectedMeetingId={setSelectedMeetingId}
@@ -1036,7 +1044,7 @@ const showFooter =
          {currentScreen === "p2p-meeting-confirmation" && (
   <P2PMeetingConfirmationScreen
     meetingId={selectedMeetingId}
-    onNavigate={setCurrentScreen}
+    onNavigate={pushScreen}
   />
 )}
           
