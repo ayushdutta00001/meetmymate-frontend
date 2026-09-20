@@ -655,7 +655,7 @@ if (error) {
             >
               <div className="p-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-blue-950 from-white to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
+                  <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center shadow-md">
                     <Sparkles className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
@@ -678,7 +678,7 @@ if (error) {
                           initial={{ scale: 0.8, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0.8, opacity: 0 }}
-                          className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium shadow-sm"
+                          className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium shadow-sm"
                         >
                           {skill}
                           <button

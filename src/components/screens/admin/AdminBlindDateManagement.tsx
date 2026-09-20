@@ -1,4 +1,3 @@
-import { api } from '../../../lib/api';
 import { supabase } from '../../../supabase';
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -28,6 +27,61 @@ import {
   AlertTriangle,
   Activity,
 } from 'lucide-react';
+
+const SUPABASE_PROJECT_URL = 'https://stvejpshtkqrseriekjv.supabase.co';
+const ADMIN_BLIND_DATE_BOOKINGS_URL =
+  `${SUPABASE_PROJECT_URL}/functions/v1/admin_list_blind_date_bookings`;
+const ADMIN_SERVICE_SETTINGS_URL =
+  `${SUPABASE_PROJECT_URL}/functions/v1/admin_get_service_settings`;
+
+async function fetchAdminFunction(
+  url: string,
+  method: 'GET' | 'POST' = 'GET',
+  body?: unknown
+): Promise<any> {
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) {
+    throw new Error(`Unable to read admin session: ${sessionError.message}`);
+  }
+
+  const token = sessionData.session?.access_token;
+
+  if (!token) {
+    throw new Error('Admin session has expired. Please sign in again.');
+  }
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+
+  const rawText = await response.text();
+  let payload: any = null;
+
+  try {
+    payload = rawText ? JSON.parse(rawText) : null;
+  } catch {
+    throw new Error(
+      `Admin function returned invalid JSON (HTTP ${response.status}).`
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      payload?.error ||
+        payload?.message ||
+        `Admin function request failed (HTTP ${response.status}).`
+    );
+  }
+
+  return payload;
+}
 
 // Types matching backend structure
 interface BlindDateBooking {
@@ -574,13 +628,18 @@ function normalizeBooking(
 
   const user = raw?.users || raw?.user || {};
 
-  const status = String(
+  const rawStatus = String(
     raw?.status ??
     (raw?.cancelled ? 'cancelled' : 'pending')
-  ).toLowerCase() as BlindDateBooking['status'];
+  ).toLowerCase();
+
+  const status = (
+    rawStatus === 'paid' ? 'pending' : rawStatus
+  ) as BlindDateBooking['status'];
 
   const paymentStatus = String(
-    raw?.payment_status ?? 'pending'
+    raw?.payment_status ??
+      (raw?.refund_status === 'refunded' ? 'refunded' : 'pending')
   ).toLowerCase() as BlindDateBooking['payment_status'];
 
   const normalized: BlindDateBooking = {
@@ -672,6 +731,8 @@ export function AdminBlindDateManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [budgetDropdownOpen, setBudgetDropdownOpen] = useState(false);
 const [realtimeConnected, setRealtimeConnected] = useState(false);
+const [loadError, setLoadError] = useState<string | null>(null);
+const [lastLoadedAt, setLastLoadedAt] = useState<string | null>(null);
 const [serviceSettings, setServiceSettings] = useState({
   autoFlagHours: 24,
   highRiskHours: 48,
@@ -680,43 +741,115 @@ const [serviceSettings, setServiceSettings] = useState({
 const loadBookings = async () => {
   try {
     setIsLoading(true);
+    setLoadError(null);
 
-    // Bookings are the primary source. Do not let optional settings failure
-    // prevent the real booking data from loading.
-    const res = await api.get<any[]>('admin_list_blind_date_bookings');
+    /* ======================================================
+       1. LOAD REAL ADMIN BOOKINGS
+       Use the same direct authenticated request pattern as
+       the working Blind Date Match & Arrange screen.
+    ====================================================== */
+    const result = await fetchAdminFunction(
+      ADMIN_BLIND_DATE_BOOKINGS_URL,
+      'GET'
+    );
 
-    console.log('BLIND DATE ADMIN BOOKINGS RESPONSE:', res);
+    console.log('BLIND DATE ADMIN BOOKINGS DIRECT RESPONSE:', result);
 
-    if (!res?.success) {
-      console.error('Blind Date bookings API failed:', res?.error || res);
-      setBookings([]);
-    } else {
-      const rows = Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray((res as any)?.data?.bookings)
-          ? (res as any).data.bookings
-          : Array.isArray((res as any)?.bookings)
-            ? (res as any).bookings
-            : [];
+    const rows = Array.isArray(result?.data)
+      ? result.data
+      : Array.isArray(result?.data?.bookings)
+        ? result.data.bookings
+        : Array.isArray(result?.bookings)
+          ? result.bookings
+          : [];
 
-      console.log('BLIND DATE BOOKING COUNT:', rows.length);
-      console.log('BLIND DATE FIRST BOOKING:', rows[0] || null);
+    console.log('BLIND DATE ADMIN REAL ROW COUNT:', rows.length);
+    console.log('BLIND DATE ADMIN FIRST REAL ROW:', rows[0] || null);
 
-      const normalized = rows.map((row: any) =>
-        normalizeBooking(row, serviceSettings)
-      );
+    /* ======================================================
+       2. FILL USER DETAILS WHEN THE ADMIN FUNCTION DOES NOT
+          INCLUDE THE users JOIN.
+    ====================================================== */
+    const userIds = Array.from(
+      new Set(
+        rows
+          .map((row: any) => row?.user_id)
+          .filter(Boolean)
+      )
+    );
 
-      setBookings(normalized);
+    let usersById = new Map<
+      string,
+      { id: string; name?: string | null; profile_photo_url?: string | null }
+    >();
+
+    if (userIds.length > 0) {
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id,name,profile_photo_url')
+        .in('id', userIds);
+
+      if (usersError) {
+        console.warn(
+          'Unable to enrich Blind Date bookings with users table:',
+          usersError
+        );
+      } else {
+        for (const user of usersData || []) {
+          usersById.set(user.id, user);
+        }
+      }
     }
 
-    // Optional AI settings. Booking data must continue even if this endpoint fails.
-    try {
-      const settingsRes = await api.get<any>('admin_get_service_settings');
+    const enrichedRows = rows.map((row: any) => {
+      const joinedUser =
+        row?.users ||
+        row?.user ||
+        usersById.get(String(row?.user_id || '')) ||
+        {};
 
-      if (settingsRes?.success && settingsRes?.data) {
+      return {
+        ...row,
+        users: joinedUser,
+        user_name:
+          row?.user_name ||
+          joinedUser?.name ||
+          'User',
+        user_avatar:
+          row?.user_avatar ||
+          joinedUser?.profile_photo_url ||
+          row?.avatar_url ||
+          null,
+      };
+    });
+
+    const normalized = enrichedRows.map((row: any) =>
+      normalizeBooking(row, serviceSettings)
+    );
+
+    console.log('BLIND DATE NORMALIZED REAL BOOKINGS:', normalized);
+
+    setBookings(normalized);
+    setLastLoadedAt(new Date().toISOString());
+
+    /* ======================================================
+       3. OPTIONAL ADMIN SERVICE SETTINGS
+       These settings are not allowed to break booking loading.
+    ====================================================== */
+    try {
+      const settingsResult = await fetchAdminFunction(
+        ADMIN_SERVICE_SETTINGS_URL,
+        'GET'
+      );
+
+      if (settingsResult?.success && settingsResult?.data) {
         const nextSettings = {
-          autoFlagHours: Number(settingsRes.data.auto_flag_hours ?? 24),
-          highRiskHours: Number(settingsRes.data.high_risk_hours ?? 48),
+          autoFlagHours: Number(
+            settingsResult.data.auto_flag_hours ?? 24
+          ),
+          highRiskHours: Number(
+            settingsResult.data.high_risk_hours ?? 48
+          ),
         };
 
         setServiceSettings(nextSettings);
@@ -729,16 +862,22 @@ const loadBookings = async () => {
         );
       }
     } catch (settingsError) {
-      console.warn('Blind Date service settings could not be loaded:', settingsError);
+      console.warn(
+        'Blind Date service settings could not be loaded:',
+        settingsError
+      );
     }
-  } catch (err) {
-    console.error('Failed loading Blind Date admin bookings:', err);
+  } catch (err: any) {
+    console.error('Failed loading REAL Blind Date admin bookings:', err);
     setBookings([]);
+    setLoadError(
+      err?.message ||
+        'Unable to load Blind Date booking data from the server.'
+    );
   } finally {
     setIsLoading(false);
   }
 };
-
 useEffect(() => {
   let channel: ReturnType<typeof supabase.channel> | null = null;
 
@@ -754,39 +893,9 @@ useEffect(() => {
           schema: 'public',
           table: 'blind_date_bookings',
         },
-        (payload: any) => {
-          console.log('Realtime Blind Date booking change:', payload);
-
-          if (payload.eventType === 'DELETE') {
-            const deletedId = payload.old?.id;
-            if (deletedId) {
-              setBookings(prev =>
-                prev.filter(booking => booking.id !== deletedId)
-              );
-            }
-            return;
-          }
-
-          const incoming = normalizeBooking(
-            payload.new,
-            serviceSettings
-          );
-
-          setBookings(prev => {
-            const exists = prev.some(
-              booking => booking.id === incoming.id
-            );
-
-            if (!exists) {
-              return [incoming, ...prev];
-            }
-
-            return prev.map(booking =>
-              booking.id === incoming.id
-                ? { ...booking, ...incoming }
-                : booking
-            );
-          });
+        (_payload: any) => {
+          console.log('Realtime Blind Date booking change detected. Reloading admin data...');
+          void loadBookings();
         }
       )
       .subscribe((status: any) => {
@@ -1114,6 +1223,36 @@ const stats = {
       </div>
 
       <div className="max-w-[1800px] mx-auto px-4 lg:px-8 py-8 space-y-6">
+
+        {loadError && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4"
+          >
+            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-red-300 font-semibold">
+                Blind Date data could not be loaded
+              </p>
+              <p className="text-xs text-red-200/80 mt-1 break-words">
+                {loadError}
+              </p>
+            </div>
+            <button
+              onClick={loadBookings}
+              className="px-3 py-2 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-semibold hover:bg-red-500/25 transition-colors flex-shrink-0"
+            >
+              Retry
+            </button>
+          </motion.div>
+        )}
+
+        {lastLoadedAt && !loadError && (
+          <div className="flex items-center justify-end text-[11px] text-gray-500">
+            Last updated {new Date(lastLoadedAt).toLocaleString('en-IN')}
+          </div>
+        )}
        
         {/* Stats Row 1 */}
 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

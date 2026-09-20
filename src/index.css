@@ -8379,3 +8379,160 @@ button:focus-visible {
     opacity: .5;
   }
 }
+/* =========================================================
+   MEETMYMATE — FORCE DARK MODE
+   Always use dark appearance regardless of OS/browser theme
+   ========================================================= */
+
+html {
+  color-scheme: dark !important;
+  background-color: #0A0F1F !important;
+}
+
+html,
+body,
+#root {
+  background-color: #0A0F1F !important;
+  color: #FFFFFF !important;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* =========================================================
+   MEETMYMATE — FORCE DARK THEME
+   Applies dark colors to light Tailwind utility classes
+   regardless of OS/browser appearance.
+   ========================================================= */
+
+html.dark,
+html.dark body,
+html.dark #root {
+  background-color: #0A0F1F !important;
+  color: #FFFFFF !important;
+  color-scheme: dark !important;
+}
+
+/* ---------- LIGHT BACKGROUNDS → DARK ---------- */
+
+html.dark [class~="bg-white"] {
+  background-color: #111827 !important;
+}
+
+html.dark [class~="bg-gray-50"] {
+  background-color: #0F172A !important;
+}
+
+html.dark [class~="bg-gray-100"] {
+  background-color: #1F2937 !important;
+}
+
+html.dark [class~="bg-gray-200"] {
+  background-color: #374151 !important;
+}
+
+/* ---------- LIGHT TEXT → DARK THEME TEXT ---------- */
+
+html.dark [class~="text-black"] {
+  color: #FFFFFF !important;
+}
+
+html.dark [class~="text-gray-900"] {
+  color: #F9FAFB !important;
+}
+
+html.dark [class~="text-gray-800"] {
+  color: #F3F4F6 !important;
+}
+
+html.dark [class~="text-gray-700"] {
+  color: #E5E7EB !important;
+}
+
+html.dark [class~="text-gray-600"] {
+  color: #D1D5DB !important;
+}
+
+html.dark [class~="text-gray-500"] {
+  color: #9CA3AF !important;
+}
+
+/* ---------- LIGHT BORDERS → DARK ---------- */
+
+html.dark [class~="border-gray-100"] {
+  border-color: #374151 !important;
+}
+
+html.dark [class~="border-gray-200"] {
+  border-color: #374151 !important;
+}
+
+html.dark [class~="border-gray-300"] {
+  border-color: #4B5563 !important;
+}
+
+/* ---------- COMMON FORM ELEMENTS ---------- */
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color-scheme: dark !important;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #1F2937 !important;
+  color: #F9FAFB !important;
+  border-color: #4B5563 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #9CA3AF !important;
+}
+
+/* ---------- PAGE ROOT ---------- */
+
+html.dark {
+  background: #0A0F1F !important;
+}
+
+html.dark body {
+  min-height: 100vh;
+  background: #0A0F1F !important;
+}
+
+html.dark #root {
+  min-height: 100vh;
+  background: #0A0F1F !important;
+}
+
+/* =========================================================
+   MEETMYMATE — FORCE DARK CLASS OVERRIDES
+   ========================================================= */
+
+html.dark [class~="bg-[#F2F4F7]"] {
+  background-color: #0A0F1F !important;
+}
+
+html.dark [class~="bg-[#F0F2F5]"] {
+  background-color: #070B18 !important;
+}
+
+html.dark [class~="dark:bg-[#0A0F1F]"] {
+  background-color: #0A0F1F !important;
+}
+
+html.dark [class~="dark:bg-[#070B18]"] {
+  background-color: #070B18 !important;
+}
+
+html.dark [class~="dark:text-white"] {
+  color: #FFFFFF !important;
+}
+
+html.dark [class~="text-[#0B0B0C]"] {
+  color: #FFFFFF !important;
+}

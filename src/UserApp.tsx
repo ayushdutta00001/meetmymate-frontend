@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
@@ -175,6 +175,8 @@ export default function UserApp() {
  
   const [previousScreen, setPreviousScreen] = useState<Screen>('home');
   const [navigationHistory, setNavigationHistory] = useState<Screen[]>([]);
+  const navigationHistoryRef = useRef<Screen[]>([]);
+const deviceBackInitializedRef = useRef(false);
  const [openingCompleted, setOpeningCompleted] = useState(() => {
   return sessionStorage.getItem('meetmymate_opening_completed') === 'true';
 });
@@ -387,12 +389,19 @@ async function checkProfile() {
   /* =========================
      NAVIGATION (FIXED & SAFE)
   ========================= */
- const navigate = (screen: Screen, param?: string | number) => {
-  setNavigationHistory((prev) => [...prev, currentScreen]);
-  
+const navigate = (screen: Screen, param?: string | number) => {
+  setNavigationHistory((prev) => {
+    const next = [...prev, currentScreen];
+    navigationHistoryRef.current = next;
+    return next;
+  });  
   // ✅ P2P profile gating
   if (screen === 'p2p-peer-listing' && !isP2PProfileEnabled) {
-    setNavigationHistory(prev => [...prev, currentScreen]);
+    setNavigationHistory((prev) => {
+  const next = [...prev, currentScreen];
+  navigationHistoryRef.current = next;
+  return next;
+});
     openP2PFlow();
     return;
   }
@@ -468,23 +477,77 @@ const openP2PFlow = async () => {
   /* =========================
      BACK NAVIGATION (FIXED)
   ========================= */
-  const handleBack = () => {
-    // Use navigation history FIRST
-    setNavigationHistory((prev) => {
-      if (prev.length === 0) {
-        return prev;
-      }
+ const handleBack = () => {
+  setNavigationHistory((prev) => {
+    if (prev.length === 0) {
+      navigationHistoryRef.current = [];
+      return prev;
+    }
 
-      const history = [...prev];
-      const last = history.pop();
+    const history = [...prev];
+    const last = history.pop();
 
-      if (last) {
-        setCurrentScreen(last);
-      }
+    navigationHistoryRef.current = history;
 
-      return history;
-    });
+    if (last) {
+      setCurrentScreen(last);
+    }
+
+    return history;
+  });
+};
+
+/* =========================================================
+   DEVICE / BROWSER BACK BUTTON SUPPORT
+   Uses the existing navigationHistory system.
+   ========================================================= */
+
+useEffect(() => {
+  if (deviceBackInitializedRef.current) {
+    return;
+  }
+
+  deviceBackInitializedRef.current = true;
+
+  // Create one browser-history guard entry.
+  // The URL does not change.
+  window.history.pushState(
+    {
+      ...(window.history.state || {}),
+      meetMyMateBackGuard: true,
+    },
+    '',
+    window.location.href
+  );
+
+  const handleDeviceBack = () => {
+    // No internal app history left.
+    // Allow the browser/device to continue leaving the page.
+    if (navigationHistoryRef.current.length === 0) {
+      return;
+    }
+
+    // Use the app's existing back navigation.
+    handleBack();
+
+    // Re-create the guard entry so the next device Back
+    // can again be handled by the application.
+    window.history.pushState(
+      {
+        ...(window.history.state || {}),
+        meetMyMateBackGuard: true,
+      },
+      '',
+      window.location.href
+    );
   };
+
+  window.addEventListener('popstate', handleDeviceBack);
+
+  return () => {
+    window.removeEventListener('popstate', handleDeviceBack);
+  };
+}, []);
 
 
   /* =========================

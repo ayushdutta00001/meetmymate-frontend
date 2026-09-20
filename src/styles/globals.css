@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@custom-variant dark (&:where(.dark, .dark *));
 @theme {
   /* Light Mode Colors */
   --color-primary: #3C82F6;
@@ -1239,3 +1239,17 @@ button:focus-visible {
   scrollbar-color: #475569 transparent;
 }
 
+/* =========================================================
+   FORCE DARK MODE
+   ========================================================= */
+
+html {
+  color-scheme: dark;
+  background-color: #0A0F1F;
+}
+
+html,
+body,
+#root {
+  background-color: #0A0F1F;
+}
