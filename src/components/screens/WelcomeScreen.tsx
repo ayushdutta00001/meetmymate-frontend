@@ -107,30 +107,44 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
         </motion.div>
 
         {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="w-full max-w-md space-y-4"
-        >
-          <Button
-            variant="secondary"
-            size="large"
-            fullWidth
-            onClick={onSignUp}
-          >
-            Create Account
-          </Button>
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.9 }}
+  className="w-full max-w-md space-y-4"
+>
+  <button
+  type="button"
+  onClick={onSignUp}
+  className="
+    w-full
+    h-14
+    rounded-xl
+    bg-[#FFF27C]
+    hover:bg-[#FFE95C]
+    text-black
+    font-medium
+    transition-all
+    duration-200
+    shadow-sm
+  "
+  style={{
+    color: '#000000',
+    WebkitTextFillColor: '#000000',
+  }}
+>
+  Create Account
+</button>
 
-          <Button
-            variant="glass"
-            size="large"
-            fullWidth
-            onClick={onSignIn}
-          >
-            Sign In
-          </Button>
-        </motion.div>
+  <Button
+    variant="glass"
+    size="large"
+    fullWidth
+    onClick={onSignIn}
+  >
+    Sign In
+  </Button>
+</motion.div>
 
         {/* Footer text */}
         <motion.p
