@@ -670,19 +670,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
 
             <div>
 
-              <p
-                className="
-                  text-[10px]
-                  font-semibold
-                  text-gray-400
-                  dark:text-gray-500
-                  uppercase
-                  tracking-[0.15em]
-                  mb-0.5
-                "
-              >
-                Good morning
-              </p>
+              
 
               <h2
                 className="

@@ -22,8 +22,12 @@ export function BlindDateBooking({
     city: '',
     preferredLocations: [] as string[],
     genderPreference: '',
-    minAge: 18,
-    maxAge: 60,
+
+    // Keep age inputs as strings while the user is editing.
+    // This prevents Number('') from turning an empty field into 0.
+    minAge: '18',
+    maxAge: '60',
+
     notes: '',
   });
 
@@ -109,8 +113,14 @@ export function BlindDateBooking({
       formData.genderPreference,
 
     age_preference: {
-      min: formData.minAge,
-      max: formData.maxAge,
+      min:
+        formData.minAge === ''
+          ? 18
+          : Number(formData.minAge),
+      max:
+        formData.maxAge === ''
+          ? 60
+          : Number(formData.maxAge),
     },
 
     notes: formData.notes || null,
@@ -213,6 +223,7 @@ export function BlindDateBooking({
 
             <div className="flex-shrink-0">
               <div className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-right">
+
                 <p className="text-sm font-bold text-blue-700 dark:text-blue-400 leading-none">
                   ₹399
                 </p>
@@ -220,6 +231,7 @@ export function BlindDateBooking({
                 <p className="text-[10px] text-blue-500 dark:text-blue-400/70 mt-0.5">
                   one-time
                 </p>
+
               </div>
             </div>
 
@@ -609,6 +621,7 @@ export function BlindDateBooking({
 
                   <div className="grid grid-cols-2 gap-3">
 
+                    {/* Minimum Age */}
                     <div>
 
                       <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">
@@ -620,19 +633,31 @@ export function BlindDateBooking({
                         min={18}
                         max={100}
                         value={formData.minAge}
+                        onFocus={(e) =>
+                          e.currentTarget.select()
+                        }
                         onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            minAge: Number(
-                              e.target.value
-                            ),
-                          })
+                          setFormData((prev) => ({
+                            ...prev,
+                            minAge:
+                              e.target.value,
+                          }))
+                        }
+                        onBlur={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            minAge:
+                              prev.minAge === ''
+                                ? '18'
+                                : prev.minAge,
+                          }))
                         }
                         className="w-full h-11 px-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#0A0F1F] text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all"
                       />
 
                     </div>
 
+                    {/* Maximum Age */}
                     <div>
 
                       <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">
@@ -644,13 +669,24 @@ export function BlindDateBooking({
                         min={18}
                         max={100}
                         value={formData.maxAge}
+                        onFocus={(e) =>
+                          e.currentTarget.select()
+                        }
                         onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            maxAge: Number(
-                              e.target.value
-                            ),
-                          })
+                          setFormData((prev) => ({
+                            ...prev,
+                            maxAge:
+                              e.target.value,
+                          }))
+                        }
+                        onBlur={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            maxAge:
+                              prev.maxAge === ''
+                                ? '60'
+                                : prev.maxAge,
+                          }))
                         }
                         className="w-full h-11 px-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#0A0F1F] text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all"
                       />
@@ -767,16 +803,18 @@ export function BlindDateBooking({
           <div className="hidden md:block pb-2">
 
             <button
-            onClick={handleContinue}
-            disabled={!isValid()}
-            className={`w-full py-4 rounded-xl transition-all text-white font-medium ${
-              isValid()
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
-                : 'bg-gray-300 dark:bg-gray-800 text-gray-500 dark:text-gray-600 cursor-not-allowed'
-            }`}
-          >
-            Continue to Payment
-          </button>
+              onClick={handleContinue}
+              disabled={!isValid() || loading}
+              className={`w-full py-4 rounded-xl transition-all text-white font-medium ${
+                isValid() && !loading
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
+                  : 'bg-gray-300 dark:bg-gray-800 text-gray-500 dark:text-gray-600 cursor-not-allowed'
+              }`}
+            >
+              {loading
+                ? 'Preparing Payment...'
+                : 'Continue to Payment'}
+            </button>
 
           </div>
 
@@ -790,16 +828,18 @@ export function BlindDateBooking({
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#0A0F1F]/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
 
         <button
-            onClick={handleContinue}
-            disabled={!isValid()}
-            className={`w-full py-4 rounded-xl transition-all text-white font-medium ${
-              isValid()
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
-                : 'bg-gray-300 dark:bg-gray-800 text-gray-500 dark:text-gray-600 cursor-not-allowed'
-            }`}
-          >
-            Continue to Payment
-          </button>
+          onClick={handleContinue}
+          disabled={!isValid() || loading}
+          className={`w-full py-4 rounded-xl transition-all text-white font-medium ${
+            isValid() && !loading
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
+              : 'bg-gray-300 dark:bg-gray-800 text-gray-500 dark:text-gray-600 cursor-not-allowed'
+          }`}
+        >
+          {loading
+            ? 'Preparing Payment...'
+            : 'Continue to Payment'}
+        </button>
 
       </div>
 
