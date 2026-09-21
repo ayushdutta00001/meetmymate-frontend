@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
@@ -20,6 +20,12 @@ interface P2PPeerListingScreenProps {
   onBack: () => void;
   onSelectPeer: (peerId: string) => void;
 }
+
+/*
+ * ============================================================
+ * PROFESSION / PRIMARY ROLE FILTER OPTIONS
+ * ============================================================
+ */
 
 const PROFESSIONS = [
   'Developers',
@@ -57,12 +63,12 @@ export function P2PPeerListingScreen({
 }: P2PPeerListingScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfession, setSelectedProfession] = useState('All');
-const [showProfessionFilter, setShowProfessionFilter] = useState(false);
-
-const professionFilterRef = useRef<HTMLDivElement>(null);
+  const [showProfessionFilter, setShowProfessionFilter] = useState(false);
 
   const [peers, setPeers] = useState<P2PProfile[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const professionFilterRef = useRef<HTMLDivElement>(null);
 
   /*
    * ============================================================
@@ -150,27 +156,32 @@ const professionFilterRef = useRef<HTMLDivElement>(null);
     loadPeers();
   }, []);
 
+  /*
+   * ============================================================
+   * CLOSE FILTER DROPDOWN WHEN CLICKING OUTSIDE
+   * ============================================================
+   */
 
   useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      professionFilterRef.current &&
-      !professionFilterRef.current.contains(event.target as Node)
-    ) {
-      setShowProfessionFilter(false);
-    }
-  };
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        professionFilterRef.current &&
+        !professionFilterRef.current.contains(event.target as Node)
+      ) {
+        setShowProfessionFilter(false);
+      }
+    };
 
-  document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
 
-  return () => {
-    document.removeEventListener('mousedown', handleClickOutside);
-  };
-}, []);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   /*
    * ============================================================
-   * SEARCH + INDUSTRY FILTER
+   * SEARCH + PROFESSION FILTER
    * ============================================================
    */
 
@@ -181,17 +192,16 @@ const professionFilterRef = useRef<HTMLDivElement>(null);
       !query ||
       peer.name.toLowerCase().includes(query) ||
       peer.role.toLowerCase().includes(query) ||
-      peer.industry.toLowerCase().includes(query) ||
       peer.bio.toLowerCase().includes(query) ||
       peer.expertise.some((item) =>
         item.toLowerCase().includes(query)
       );
 
     const matchesProfession =
-  selectedProfession === 'All' ||
-  peer.role === selectedProfession;
+      selectedProfession === 'All' ||
+      peer.role === selectedProfession;
 
-return matchesSearch && matchesProfession;
+    return matchesSearch && matchesProfession;
   });
 
   /*
@@ -220,6 +230,11 @@ return matchesSearch && matchesProfession;
     onNavigate('p2p-request-meeting');
   };
 
+  const handleClearFilter = () => {
+    setSelectedProfession('All');
+    setShowProfessionFilter(false);
+  };
+
   /*
    * ============================================================
    * UI
@@ -245,16 +260,19 @@ return matchesSearch && matchesProfession;
 
         <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
 
-          {/* Top row */}
+          {/* ================================================== */}
+          {/* HEADER TITLE */}
+          {/* ================================================== */}
+
           <div className="flex items-center gap-3">
 
             {/* Back button */}
-            <div className="[&>button]:!border-white/20 [&>button]:!bg-white/10 [&>button]:!text-white [&>button]:hover:!bg-white/20">
+            <div className="flex-shrink-0 [&>button]:!border-white/20 [&>button]:!bg-white/10 [&>button]:!text-white [&>button]:hover:!bg-white/20">
               <BackButton onClick={onBack} />
             </div>
 
             {/* Page title */}
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0">
               <h1
                 className="text-white text-lg md:text-xl font-extrabold leading-tight"
                 style={{ fontFamily: "'Outfit', sans-serif" }}
@@ -262,63 +280,23 @@ return matchesSearch && matchesProfession;
                 PartnerUp
               </h1>
 
-             
+              <p>Find your next connection.</p>
             </div>
 
-            {/* Header actions */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-
-              {/* Edit Profile */}
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() =>
-                  onNavigate('p2p-profile-enable')
-                }
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 border border-white/15 text-white text-xs font-bold backdrop-blur-sm transition-all"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-
-                <span className="hidden sm:inline">
-                  Edit Profile
-                </span>
-
-                <span className="sm:hidden">
-                  Edit
-                </span>
-              </motion.button>
-
-              {/* My Requests */}
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() =>
-                  onNavigate('p2p-requests-hub')
-                }
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-400 text-white hover:bg-blue-500 text-xs font-bold shadow-md transition-all"
-              >
-                <Inbox className="w-3.5 h-3.5" />
-
-                <span className=" text-2xl text-blue-700 hidden sm:inline">
-                  My Requests
-                </span>
-
-                <span className="sm:hidden">
-                  Requests
-                </span>
-              </motion.button>
-
-            </div>
           </div>
 
-          {/* Header information */}
+          {/* ================================================== */}
+          {/* HEADER INFORMATION */}
+          {/* ================================================== */}
+
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="mt-4 flex items-center gap-2"
+            className="mt-4 flex flex-wrap items-center gap-2"
           >
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/10">
+            {/* Active profiles */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
               <Users className="w-3.5 h-3.5 text-white/80" />
 
               <span className="text-[11px] font-semibold text-white/85">
@@ -326,7 +304,8 @@ return matchesSearch && matchesProfession;
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/10">
+            {/* Find connection */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
               <Sparkles className="w-3.5 h-3.5 text-white/80" />
 
               <span className="text-[11px] font-semibold text-white/85">
@@ -356,11 +335,11 @@ return matchesSearch && matchesProfession;
         >
           <div className="relative">
 
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
 
             <input
               type="text"
-              placeholder="Search by name, role, industry or expertise..."
+              placeholder="Search by name, profession or expertise..."
               value={searchQuery}
               onChange={(e) =>
                 setSearchQuery(e.target.value)
@@ -370,6 +349,7 @@ return matchesSearch && matchesProfession;
 
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
               >
@@ -380,96 +360,175 @@ return matchesSearch && matchesProfession;
           </div>
         </motion.div>
 
-      {/* ==================================================== */}
-{/* PROFESSION FILTER */}
-{/* ==================================================== */}
+        {/* ==================================================== */}
+        {/* ACTION BUTTONS */}
+        {/* ==================================================== */}
 
-<motion.div
-  initial={{ opacity: 0, y: 8 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 0.16 }}
-  className="pt-4 pb-2"
->
-  <div className="relative inline-block" ref={professionFilterRef}>
-    {/* Filter Button */}
-    <button
-      type="button"
-      onClick={() => setShowProfessionFilter((prev) => !prev)}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
-        selectedProfession !== 'All'
-          ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-          : 'bg-white dark:bg-white/[0.04] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-blue-400 dark:hover:border-blue-500/50'
-      }`}
-    >
-      <Filter className="w-4 h-4" />
-
-      <span>
-        {selectedProfession === 'All'
-          ? 'Filter'
-          : selectedProfession}
-      </span>
-
-      <ChevronDown
-        className={`w-4 h-4 transition-transform ${
-          showProfessionFilter ? 'rotate-180' : ''
-        }`}
-      />
-    </button>
-
-    {/* Dropdown */}
-    <AnimatePresence>
-      {showProfessionFilter && (
         <motion.div
-          initial={{ opacity: 0, y: -8, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -8, scale: 0.98 }}
-          transition={{ duration: 0.15 }}
-          className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#111827] border border-gray-200 dark:border-white/10 shadow-2xl overflow-hidden"
-          style={{
-            zIndex: 99999,
-            maxHeight: '320px',
-            overflowY: 'auto',
-          }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.14 }}
+          className="flex items-center justify-end gap-2 pt-3"
         >
-          {/* All */}
-          <button
+          {/* Edit Profile */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
             type="button"
-            onClick={() => {
-              setSelectedProfession('All');
-              setShowProfessionFilter(false);
-            }}
-            className={`w-full text-left px-4 py-3 text-sm font-semibold transition-colors border-b border-gray-100 dark:border-white/5 ${
-              selectedProfession === 'All'
-                ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
-            }`}
+            onClick={() =>
+              onNavigate('p2p-profile-enable')
+            }
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 border border-blue-400/30 text-white text-sm font-bold shadow-md shadow-blue-500/10 transition-all"
           >
-            All Professions
-          </button>
+            <Pencil className="w-4 h-4" />
 
-          {/* Profession Options */}
-          {PROFESSIONS.map((profession) => (
+            <span className="sm:hidden">
+              Edit
+            </span>
+
+            <span className="hidden sm:inline">
+              Edit Profile
+            </span>
+          </motion.button>
+
+          {/* My Requests */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            type="button"
+            onClick={() =>
+              onNavigate('p2p-requests-hub')
+            }
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 border border-blue-300/30 text-white text-sm font-bold shadow-md shadow-blue-500/10 transition-all"
+          >
+            <Inbox className="w-4 h-4" />
+
+            <span className="sm:hidden">
+              Requests
+            </span>
+
+            <span className="hidden sm:inline">
+              My Requests
+            </span>
+          </motion.button>
+        </motion.div>
+
+        {/* ==================================================== */}
+        {/* PROFESSION FILTER */}
+        {/* ==================================================== */}
+
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+          className="pt-4 pb-2"
+        >
+          <div
+            className="relative inline-block"
+            ref={professionFilterRef}
+          >
+
+            {/* Filter Button */}
             <button
-              key={profession}
               type="button"
-              onClick={() => {
-                setSelectedProfession(profession);
-                setShowProfessionFilter(false);
-              }}
-              className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors border-b border-gray-100 dark:border-white/5 last:border-0 ${
-                selectedProfession === profession
-                  ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
+              onClick={() =>
+                setShowProfessionFilter((prev) => !prev)
+              }
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                selectedProfession !== 'All'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+                  : 'bg-white dark:bg-white/[0.04] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-blue-400 dark:hover:border-blue-500/50'
               }`}
             >
-              {profession}
+              <Filter className="w-4 h-4" />
+
+              <span className="max-w-[180px] truncate">
+                {selectedProfession === 'All'
+                  ? 'Filter'
+                  : selectedProfession}
+              </span>
+
+              <ChevronDown
+                className={`w-4 h-4 flex-shrink-0 transition-transform ${
+                  showProfessionFilter
+                    ? 'rotate-180'
+                    : ''
+                }`}
+              />
             </button>
-          ))}
+
+            {/* Filter Dropdown */}
+            <AnimatePresence>
+              {showProfessionFilter && (
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    y: -8,
+                    scale: 0.98,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -8,
+                    scale: 0.98,
+                  }}
+                  transition={{
+                    duration: 0.15,
+                  }}
+                  className="absolute left-0 mt-2 w-72 max-w-[calc(100vw-32px)] rounded-2xl bg-white dark:bg-[#111827] border border-gray-200 dark:border-white/10 shadow-2xl overflow-hidden"
+                  style={{
+                    zIndex: 99999,
+                    maxHeight: '320px',
+                    overflowY: 'auto',
+                  }}
+                >
+
+                  {/* All Professions */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedProfession('All');
+                      setShowProfessionFilter(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 text-sm font-semibold transition-colors border-b border-gray-100 dark:border-white/5 ${
+                      selectedProfession === 'All'
+                        ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
+                    }`}
+                  >
+                    All Professions
+                  </button>
+
+                  {/* Profession Options */}
+                  {PROFESSIONS.map((profession) => (
+                    <button
+                      key={profession}
+                      type="button"
+                      onClick={() => {
+                        setSelectedProfession(profession);
+                        setShowProfessionFilter(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                        selectedProfession === profession
+                          ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
+                      }`}
+                    >
+                      {profession}
+                    </button>
+                  ))}
+
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+          </div>
         </motion.div>
-      )}
-    </AnimatePresence>
-  </div>
-</motion.div>
+
         {/* ==================================================== */}
         {/* RESULT HEADER */}
         {/* ==================================================== */}
@@ -478,9 +537,10 @@ return matchesSearch && matchesProfession;
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.22 }}
-          className="flex items-center justify-between py-4"
+          className="flex items-center justify-between gap-4 py-4"
         >
-          <div>
+          <div className="min-w-0">
+
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Discover professionals
             </p>
@@ -490,16 +550,20 @@ return matchesSearch && matchesProfession;
               professional
               {filteredPeers.length !== 1 ? 's' : ''}
             </p>
+
           </div>
 
-       {selectedProfession !== 'All' && (
-  <button
-    onClick={() => setSelectedProfession('All')}
-    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-  >
-    Clear filter
-  </button>
-)}
+          {/* Clear filter */}
+          {selectedProfession !== 'All' && (
+            <button
+              type="button"
+              onClick={handleClearFilter}
+              className="flex-shrink-0 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Clear filter
+            </button>
+          )}
+
         </motion.div>
 
         {/* ==================================================== */}
@@ -525,59 +589,73 @@ return matchesSearch && matchesProfession;
         {/* ==================================================== */}
 
         {!loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
 
-            <AnimatePresence mode="popLayout">
-              {filteredPeers.length > 0 ? (
-                filteredPeers.map((peer, index) => (
-                  <P2PProfileCard
-                    key={peer.user_id}
-                    profile={peer}
-                    onViewProfile={handleViewProfile}
-                    onSendRequest={handleConnect}
-                    delay={0.05 * index}
-                  />
-                ))
-              ) : (
+            {filteredPeers.length > 0 ? (
+              filteredPeers.map((peer, index) => (
                 <motion.div
-                  key="empty"
+                  key={peer.user_id}
                   initial={{
                     opacity: 0,
-                    y: 20,
+                    y: 12,
                   }}
                   animate={{
                     opacity: 1,
                     y: 0,
                   }}
-                  exit={{
-                    opacity: 0,
+                  transition={{
+                    duration: 0.25,
+                    delay: Math.min(index * 0.04, 0.2),
                   }}
-                  className="col-span-full flex flex-col items-center justify-center py-20 text-center"
+                  className="min-w-0 w-full"
                 >
-                  <div className="w-20 h-20 rounded-3xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-5">
-                    <Search className="w-9 h-9 text-gray-400" />
-                  </div>
-
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                    No professionals found
-                  </h3>
-
-                  <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mb-6">
-                    Try changing your search or selecting a different industry.
-                  </p>
-
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSelectedProfession('All');
-                    }}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-violet-500/20 hover:from-violet-600 hover:to-purple-700 transition-all"
-                  >
-                    Clear Search & Filter
-                  </button>
+                  <P2PProfileCard
+                    profile={peer}
+                    onViewProfile={handleViewProfile}
+                    onSendRequest={handleConnect}
+                    delay={0}
+                  />
                 </motion.div>
-              )}
-            </AnimatePresence>
+              ))
+            ) : (
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                className="col-span-full flex flex-col items-center justify-center py-20 text-center"
+              >
+
+                <div className="w-20 h-20 rounded-3xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-5">
+                  <Search className="w-9 h-9 text-gray-400" />
+                </div>
+
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                  No professionals found
+                </h3>
+
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mb-6">
+                  Try changing your search or selecting a different profession.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedProfession('All');
+                    setShowProfessionFilter(false);
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-violet-500/20 hover:from-violet-600 hover:to-purple-700 transition-all"
+                >
+                  Clear Search & Filter
+                </button>
+
+              </motion.div>
+            )}
 
           </div>
         )}
@@ -597,15 +675,17 @@ return matchesSearch && matchesProfession;
               y: 0,
             }}
             transition={{
-              delay: 0.6,
+              delay: 0.45,
             }}
             className="mt-8 mb-4 flex items-center gap-3 p-4 rounded-2xl border border-dashed border-blue-300 dark:border-blue-700/50 bg-blue-50/70 dark:bg-blue-900/10"
           >
+
             <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/15 flex items-center justify-center flex-shrink-0">
               <Sparkles className="w-5 h-5 text-violet-600 dark:text-violet-400" />
             </div>
 
             <div className="flex-1 min-w-0">
+
               <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
                 Find your partner and make meaningful connections.
               </p>
@@ -613,9 +693,9 @@ return matchesSearch && matchesProfession;
               <p className="text-xs text-blue-600/80 dark:text-blue-400/70 mt-0.5">
                 Wish you the best in your search!
               </p>
+
             </div>
 
-            
           </motion.div>
         )}
 
