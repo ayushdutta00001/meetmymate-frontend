@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
@@ -7,6 +7,8 @@ import {
   Sparkles,
   Inbox,
   Pencil,
+  Filter,
+  ChevronDown,
 } from 'lucide-react';
 
 import { supabase } from '../../supabase';
@@ -19,14 +21,33 @@ interface P2PPeerListingScreenProps {
   onSelectPeer: (peerId: string) => void;
 }
 
-const INDUSTRIES = [
-  'All',
-  'Technology',
+const PROFESSIONS = [
+  'Developers',
+  'Designers',
+  'Marketing Experts',
+  'Creators',
+  'Founders',
+  'Students',
+  'Writers',
+  'Engineers',
+  'Researchers',
+  'Product Managers',
+  'Sales Professionals',
   'Finance',
   'Healthcare',
-  'E-commerce',
-  'Education',
-  'Real Estate',
+  'Educators',
+  'Freelancers',
+  'Artists',
+  'Musicians',
+  'Videographers',
+  'Photographers',
+  'AI Enthusiasts',
+  'Game Developers',
+  'UI/UX Designers',
+  'Data Analysts',
+  'Content Strategists',
+  'Consultants',
+  'Entrepreneurs',
 ];
 
 export function P2PPeerListingScreen({
@@ -35,7 +56,10 @@ export function P2PPeerListingScreen({
   onSelectPeer,
 }: P2PPeerListingScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedIndustry, setSelectedIndustry] = useState('All');
+  const [selectedProfession, setSelectedProfession] = useState('All');
+const [showProfessionFilter, setShowProfessionFilter] = useState(false);
+
+const professionFilterRef = useRef<HTMLDivElement>(null);
 
   const [peers, setPeers] = useState<P2PProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +150,24 @@ export function P2PPeerListingScreen({
     loadPeers();
   }, []);
 
+
+  useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      professionFilterRef.current &&
+      !professionFilterRef.current.contains(event.target as Node)
+    ) {
+      setShowProfessionFilter(false);
+    }
+  };
+
+  document.addEventListener('mousedown', handleClickOutside);
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, []);
+
   /*
    * ============================================================
    * SEARCH + INDUSTRY FILTER
@@ -145,11 +187,11 @@ export function P2PPeerListingScreen({
         item.toLowerCase().includes(query)
       );
 
-    const matchesIndustry =
-      selectedIndustry === 'All' ||
-      peer.industry === selectedIndustry;
+    const matchesProfession =
+  selectedProfession === 'All' ||
+  peer.role === selectedProfession;
 
-    return matchesSearch && matchesIndustry;
+return matchesSearch && matchesProfession;
   });
 
   /*
@@ -220,9 +262,7 @@ export function P2PPeerListingScreen({
                 PartnerUp
               </h1>
 
-              <p className="text-white/70 text-xs md:text-sm mt-0.5">
-                Discover people for meaningful professional connections
-              </p>
+             
             </div>
 
             {/* Header actions */}
@@ -340,34 +380,96 @@ export function P2PPeerListingScreen({
           </div>
         </motion.div>
 
-        {/* ==================================================== */}
-        {/* INDUSTRY FILTER CHIPS */}
-        {/* ==================================================== */}
+      {/* ==================================================== */}
+{/* PROFESSION FILTER */}
+{/* ==================================================== */}
 
+<motion.div
+  initial={{ opacity: 0, y: 8 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.16 }}
+  className="pt-4 pb-2"
+>
+  <div className="relative inline-block" ref={professionFilterRef}>
+    {/* Filter Button */}
+    <button
+      type="button"
+      onClick={() => setShowProfessionFilter((prev) => !prev)}
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+        selectedProfession !== 'All'
+          ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+          : 'bg-white dark:bg-white/[0.04] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-blue-400 dark:hover:border-blue-500/50'
+      }`}
+    >
+      <Filter className="w-4 h-4" />
+
+      <span>
+        {selectedProfession === 'All'
+          ? 'Filter'
+          : selectedProfession}
+      </span>
+
+      <ChevronDown
+        className={`w-4 h-4 transition-transform ${
+          showProfessionFilter ? 'rotate-180' : ''
+        }`}
+      />
+    </button>
+
+    {/* Dropdown */}
+    <AnimatePresence>
+      {showProfessionFilter && (
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.16 }}
-          className="flex gap-2 overflow-x-auto pt-4 pb-2"
-          style={{ scrollbarWidth: 'none' }}
+          initial={{ opacity: 0, y: -8, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -8, scale: 0.98 }}
+          transition={{ duration: 0.15 }}
+          className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#111827] border border-gray-200 dark:border-white/10 shadow-2xl overflow-hidden"
+          style={{
+            zIndex: 99999,
+            maxHeight: '320px',
+            overflowY: 'auto',
+          }}
         >
-          {INDUSTRIES.map((industry) => (
+          {/* All */}
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedProfession('All');
+              setShowProfessionFilter(false);
+            }}
+            className={`w-full text-left px-4 py-3 text-sm font-semibold transition-colors border-b border-gray-100 dark:border-white/5 ${
+              selectedProfession === 'All'
+                ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
+            }`}
+          >
+            All Professions
+          </button>
+
+          {/* Profession Options */}
+          {PROFESSIONS.map((profession) => (
             <button
-              key={industry}
-              onClick={() =>
-                setSelectedIndustry(industry)
-              }
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-                selectedIndustry === industry
-                  ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm'
-                  : 'bg-violet-400 dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-blue-400 dark:hover:border-blue-500/50 shadow-sm'
+              key={profession}
+              type="button"
+              onClick={() => {
+                setSelectedProfession(profession);
+                setShowProfessionFilter(false);
+              }}
+              className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                selectedProfession === profession
+                  ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
               }`}
             >
-              {industry}
+              {profession}
             </button>
           ))}
         </motion.div>
-
+      )}
+    </AnimatePresence>
+  </div>
+</motion.div>
         {/* ==================================================== */}
         {/* RESULT HEADER */}
         {/* ==================================================== */}
@@ -390,16 +492,14 @@ export function P2PPeerListingScreen({
             </p>
           </div>
 
-          {selectedIndustry !== 'All' && (
-            <button
-              onClick={() =>
-                setSelectedIndustry('All')
-              }
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              Clear filter
-            </button>
-          )}
+       {selectedProfession !== 'All' && (
+  <button
+    onClick={() => setSelectedProfession('All')}
+    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+  >
+    Clear filter
+  </button>
+)}
         </motion.div>
 
         {/* ==================================================== */}
@@ -469,7 +569,7 @@ export function P2PPeerListingScreen({
                   <button
                     onClick={() => {
                       setSearchQuery('');
-                      setSelectedIndustry('All');
+                      setSelectedProfession('All');
                     }}
                     className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-violet-500/20 hover:from-violet-600 hover:to-purple-700 transition-all"
                   >
