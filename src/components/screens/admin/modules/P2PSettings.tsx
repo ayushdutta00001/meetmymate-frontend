@@ -100,7 +100,7 @@ export function P2PSettings() {
       } = await supabase
         .from("p2p_settings")
         .select("*")
-        .order("created_at", {
+        .order("updated_at", {
           ascending: false,
         })
         .limit(1)
@@ -560,26 +560,6 @@ export function P2PSettings() {
   };
 
   // =========================================================
-  // +/- PRICE
-  // =========================================================
-  const changePrice = (
-    amount: number
-  ) => {
-    const current =
-      Number(settings.defaultPrice) || 0;
-
-    const next = Math.max(
-      0,
-      current + amount
-    );
-
-    updateSetting(
-      "defaultPrice",
-      String(next)
-    );
-  };
-
-  // =========================================================
   // TOGGLE CITY
   // =========================================================
   const toggleCity = async (
@@ -894,137 +874,52 @@ export function P2PSettings() {
                 fontWeight: 600,
               }}
             >
-              Pricing Settings
+              P2P Meeting Price
             </h2>
           </div>
 
-          <div>
+          <div className="rounded-xl bg-gray-900 border border-white/10 p-5 max-w-md">
             <label className="block text-sm text-gray-300 mb-2">
-              Default Meeting Price (₹)
+              Current Default Price (₹)
             </label>
 
-            <div className="flex flex-wrap items-center gap-3">
-              {/* -500 */}
-              <button
-                type="button"
-                onClick={() =>
-                  changePrice(-500)
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                ₹
+              </span>
+
+              <input
+                type="number"
+                min="1"
+                value={settings.defaultPrice}
+                onChange={(event) =>
+                  updateSetting(
+                    "defaultPrice",
+                    event.target.value
+                  )
                 }
                 className="
-                  px-3
-                  py-2
-                  rounded-lg
+                  w-full
+                  pl-9
+                  pr-4
+                  py-3
+                  rounded-xl
                   bg-gray-800
                   border
                   border-white/10
                   text-white
-                  hover:bg-gray-700
-                  transition-colors
+                  text-lg
+                  font-semibold
+                  focus:ring-2
+                  focus:ring-blue-500
+                  focus:border-transparent
+                  outline-none
                 "
-              >
-                -500
-              </button>
-
-              {/* -100 */}
-              <button
-                type="button"
-                onClick={() =>
-                  changePrice(-100)
-                }
-                className="
-                  px-3
-                  py-2
-                  rounded-lg
-                  bg-gray-800
-                  border
-                  border-white/10
-                  text-white
-                  hover:bg-gray-700
-                  transition-colors
-                "
-              >
-                -100
-              </button>
-
-              {/* PRICE INPUT */}
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  ₹
-                </span>
-
-                <input
-                  type="number"
-                  min="0"
-                  value={settings.defaultPrice}
-                  onChange={(event) =>
-                    updateSetting(
-                      "defaultPrice",
-                      event.target.value
-                    )
-                  }
-                  className="
-                    pl-7
-                    pr-4
-                    py-3
-                    rounded-xl
-                    bg-gray-900
-                    border
-                    border-white/10
-                    text-white
-                    focus:ring-2
-                    focus:ring-blue-500
-                    outline-none
-                    w-40
-                  "
-                />
-              </div>
-
-              {/* +100 */}
-              <button
-                type="button"
-                onClick={() =>
-                  changePrice(100)
-                }
-                className="
-                  px-3
-                  py-2
-                  rounded-lg
-                  bg-gray-800
-                  border
-                  border-white/10
-                  text-white
-                  hover:bg-gray-700
-                  transition-colors
-                "
-              >
-                +100
-              </button>
-
-              {/* +500 */}
-              <button
-                type="button"
-                onClick={() =>
-                  changePrice(500)
-                }
-                className="
-                  px-3
-                  py-2
-                  rounded-lg
-                  bg-gray-800
-                  border
-                  border-white/10
-                  text-white
-                  hover:bg-gray-700
-                  transition-colors
-                "
-              >
-                +500
-              </button>
+              />
             </div>
 
             <p className="text-xs text-gray-500 mt-2">
-              Default price used when creating P2P
-              meetings.
+              Delete the current amount and enter the new default price for future P2P meetings, then click Save Settings.
             </p>
           </div>
         </div>
