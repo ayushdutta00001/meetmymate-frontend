@@ -470,42 +470,65 @@ export function P2PRequestsHubScreen({
 
       /* -------------------------------------------------------
          Create NEW meeting for THIS request
-         
+
          IMPORTANT:
-         The default P2P meeting price is controlled from
-         the Admin P2P Settings screen (p2p_settings.default_price).
-         If settings cannot be loaded, keep the existing 999
-         fallback so the request flow is not broken.
+         The admin price is stored in p2p_settings, but normal
+         authenticated users may not have SELECT access to that
+         table because of RLS. Use a narrowly-scoped RPC that
+         returns only the current P2P price.
+
+         IMPORTANT:
+         Do NOT fall back to a hardcoded price. If the current
+         admin price cannot be read, stop the meeting creation
+         and revert the request to pending.
       ------------------------------------------------------- */
 
-      let defaultMeetingPrice = 999;
-
       const {
-        data: p2pSettings,
-        error: p2pSettingsError,
-      } = await supabase
-        .from('p2p_settings')
-        .select('default_price')
-        .order('updated_at', {
-          ascending: false,
-        })
-        .limit(1)
-        .maybeSingle();
+        data: currentP2PPrice,
+        error: p2pPriceError,
+      } = await supabase.rpc(
+        'get_current_p2p_price'
+      );
 
-      if (p2pSettingsError) {
+      if (p2pPriceError) {
         console.error(
-          'P2P settings price load error:',
-          p2pSettingsError
+          'P2P current price RPC error:',
+          p2pPriceError
         );
-      } else if (
-        p2pSettings?.default_price !== null &&
-        p2pSettings?.default_price !== undefined &&
-        Number.isFinite(Number(p2pSettings.default_price)) &&
-        Number(p2pSettings.default_price) >= 0
+
+        await supabase
+          .from('p2p_match_requests')
+          .update({
+            status: 'pending',
+          })
+          .eq('id', requestId)
+          .eq('status', 'accepted');
+
+        return;
+      }
+
+      const defaultMeetingPrice = Number(
+        currentP2PPrice
+      );
+
+      if (
+        !Number.isFinite(defaultMeetingPrice) ||
+        defaultMeetingPrice <= 0
       ) {
-        defaultMeetingPrice = Number(
-          p2pSettings.default_price
+        console.error(
+          'Invalid current P2P price returned by RPC:',
+          currentP2PPrice
         );
+
+        await supabase
+          .from('p2p_match_requests')
+          .update({
+            status: 'pending',
+          })
+          .eq('id', requestId)
+          .eq('status', 'accepted');
+
+        return;
       }
 
       const {
