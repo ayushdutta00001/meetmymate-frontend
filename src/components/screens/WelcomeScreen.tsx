@@ -7,9 +7,10 @@ import { Heart, ArrowLeftRight } from 'lucide-react';
 interface WelcomeScreenProps {
   onSignIn: () => void;
   onSignUp: () => void;
+  onPrivacyPolicy: () => void;
 }
 
-export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
+export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeScreenProps) {
   const features = [
     {
       icon: Heart,
@@ -46,7 +47,6 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
-
         {/* Logo */}
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
@@ -107,44 +107,33 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
         </motion.div>
 
         {/* CTA Buttons */}
-<motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 0.9 }}
-  className="w-full max-w-md space-y-4"
->
-  <button
-  type="button"
-  onClick={onSignUp}
-  className="
-    w-full
-    h-14
-    rounded-xl
-    bg-[#FFF27C]
-    hover:bg-[#FFE95C]
-    text-black
-    font-medium
-    transition-all
-    duration-200
-    shadow-sm
-  "
-  style={{
-    color: '#000000',
-    WebkitTextFillColor: '#000000',
-  }}
->
-  Create Account
-</button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="w-full max-w-md space-y-4"
+        >
+          <button
+            type="button"
+            onClick={onSignUp}
+            className="w-full h-14 rounded-xl bg-[#FFF27C] hover:bg-[#FFE95C] text-black font-medium transition-all duration-200 shadow-sm"
+            style={{
+              color: '#000000',
+              WebkitTextFillColor: '#000000',
+            }}
+          >
+            Create Account
+          </button>
 
-  <Button
-    variant="glass"
-    size="large"
-    fullWidth
-    onClick={onSignIn}
-  >
-    Sign In
-  </Button>
-</motion.div>
+          <Button
+            variant="glass"
+            size="large"
+            fullWidth
+            onClick={onSignIn}
+          >
+            Sign In
+          </Button>
+        </motion.div>
 
         {/* Footer text */}
         <motion.p
@@ -153,7 +142,14 @@ export function WelcomeScreen({ onSignIn, onSignUp }: WelcomeScreenProps) {
           transition={{ delay: 1.2 }}
           className="text-white/60 text-sm mt-8 text-center"
         >
-          By continuing, you agree to our Terms & Conditions
+          By continuing, you agree to our Terms & Conditions and{' '}
+          <button
+            type="button"
+            onClick={onPrivacyPolicy}
+            className="underline underline-offset-2 text-white/80 hover:text-white transition-colors"
+          >
+            Privacy Policy
+          </button>
         </motion.p>
       </div>
     </div>

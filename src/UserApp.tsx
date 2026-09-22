@@ -10,6 +10,7 @@ import { useAuth } from './lib/auth-context';
 import { OpeningScreen } from './components/screens/OpeningScreen';
 import { TermsScreen } from './components/screens/TermsScreen';
 import { TermsDetailScreen } from './components/screens/TermsDetailScreen';
+import { PrivacyPolicy } from './components/screens/PrivacyPolicy';
 import { WelcomeScreen } from './components/screens/WelcomeScreen';
 import { SignInScreen } from './components/screens/SignInScreen';
 import { ForgotPasswordScreen } from './components/screens/ForgotPasswordScreen';
@@ -97,6 +98,7 @@ export type Screen =
   | 'opening'
   | 'terms'
   | 'terms-detail'
+  | 'privacy-policy'
   | 'welcome'
   | 'signin'
   | 'forgot-password'
@@ -154,6 +156,7 @@ export type Screen =
   'opening',
   'terms',
   'terms-detail',
+  'privacy-policy',
   'welcome',
   'signin',
   'signup',
@@ -816,10 +819,15 @@ const showFooter =
             <TermsDetailScreen onBack={handleBack} />
           )}
 
+          {currentScreen === 'privacy-policy' && (
+            <PrivacyPolicy onBack={handleBack} />
+          )}
+
           {currentScreen === 'welcome' && (
             <WelcomeScreen
               onSignIn={() => navigate('signin')}
               onSignUp={() => navigate('signup')}
+              onPrivacyPolicy={() => navigate('privacy-policy')}
             />
           )}
 

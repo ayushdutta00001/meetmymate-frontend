@@ -31,7 +31,7 @@ interface LocationPreset {
 
 const DEFAULT_SETTINGS: P2PSettingsState = {
   defaultPrice: "150",
-  paymentDeadline: "48",
+  paymentDeadline: "24",
   autoCancelTimeout: "72",
   schedulingTimeLimit: "24",
 };
@@ -361,9 +361,9 @@ export function P2PSettings() {
 
     if (
       !Number.isFinite(price) ||
-      price < 0
+      price <= 0
     ) {
-      return "Default meeting price must be 0 or greater.";
+      return "Default meeting price must be greater than 0.";
     }
 
     if (

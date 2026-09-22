@@ -470,7 +470,43 @@ export function P2PRequestsHubScreen({
 
       /* -------------------------------------------------------
          Create NEW meeting for THIS request
+         
+         IMPORTANT:
+         The default P2P meeting price is controlled from
+         the Admin P2P Settings screen (p2p_settings.default_price).
+         If settings cannot be loaded, keep the existing 999
+         fallback so the request flow is not broken.
       ------------------------------------------------------- */
+
+      let defaultMeetingPrice = 999;
+
+      const {
+        data: p2pSettings,
+        error: p2pSettingsError,
+      } = await supabase
+        .from('p2p_settings')
+        .select('default_price')
+        .order('created_at', {
+          ascending: false,
+        })
+        .limit(1)
+        .maybeSingle();
+
+      if (p2pSettingsError) {
+        console.error(
+          'P2P settings price load error:',
+          p2pSettingsError
+        );
+      } else if (
+        p2pSettings?.default_price !== null &&
+        p2pSettings?.default_price !== undefined &&
+        Number.isFinite(Number(p2pSettings.default_price)) &&
+        Number(p2pSettings.default_price) >= 0
+      ) {
+        defaultMeetingPrice = Number(
+          p2pSettings.default_price
+        );
+      }
 
       const {
         data: newMeeting,
@@ -490,7 +526,8 @@ export function P2PRequestsHubScreen({
           status:
             'pending_payment',
 
-          price: 999,
+          price:
+            defaultMeetingPrice,
 
           payment_deadline:
             new Date(
