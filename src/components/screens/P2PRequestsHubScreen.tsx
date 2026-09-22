@@ -486,7 +486,7 @@ export function P2PRequestsHubScreen({
       } = await supabase
         .from('p2p_settings')
         .select('default_price')
-        .order('created_at', {
+        .order('updated_at', {
           ascending: false,
         })
         .limit(1)
