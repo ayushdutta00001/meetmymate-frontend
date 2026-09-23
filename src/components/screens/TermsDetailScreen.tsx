@@ -175,9 +175,9 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
             <p className="text-gray-700 dark:text-gray-300">
               For questions regarding these Terms and Conditions, please contact us at:
               <br />
-              Email: legal@meetmymate.com
+              Email: legal@meetmymatein.com
               <br />
-              Support: support@meetmymate.com
+              Support: support@meetmymatein.com
             </p>
           </div>
 

@@ -280,9 +280,7 @@ console.log("UI Status:", uiStatus);
 
 const cfg = STATUS_CONFIG[uiStatus];
 const currentStep = STEP_FOR_STATUS[uiStatus];
-async function handleCancelBooking() {
-  alert("Cancel Booking API not connected yet.");
-}
+
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0F1F] pb-24 md:pb-8 md:pr-24">
 
@@ -1313,16 +1311,7 @@ const current =
           className="space-y-3"
         >
         
-          {/* Secondary action — cancel (only while waiting/matched) */}
-          {(uiStatus === 'waiting' || uiStatus === 'matched') &&
-  !matchingDeadlineReached && (
-            <button
-            onClick={handleCancelBooking}
-              className="w-full py-4 rounded-xl border-2 border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all font-medium"
-            >
-              Cancel Booking
-            </button>
-          )}
+         
 
          
         </motion.div>

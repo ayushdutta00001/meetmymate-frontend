@@ -757,7 +757,7 @@ export function BlindDateBooking({
                 </h4>
 
                 <p className="text-xs sm:text-sm leading-relaxed text-yellow-700 dark:text-yellow-300">
-                  If we're unable to arrange your blind date within your selected date range, you'll receive a{' '}
+                  If we're unable to arrange your blind date within 24 hours from payment, you'll receive a{' '}
                   <strong>
                     100% full refund automatically
                   </strong>

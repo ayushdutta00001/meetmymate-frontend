@@ -365,12 +365,12 @@ const myRefundAmount = Number(
         className="border-b border-gray-200 dark:border-gray-800"
       >
         <div className="max-w-2xl mx-auto px-6 py-6">
-          <button
-            onClick={() => onNavigate("bookings")}
-            className="text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            ← Back to Home
-          </button>
+         <button
+  onClick={() => onNavigate("bookings")}
+  className="text-blue-600 dark:text-blue-400 hover:underline"
+>
+  ← Back to Bookings
+</button>
         </div>
       </motion.div>
 
@@ -707,11 +707,11 @@ const myRefundAmount = Number(
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
             className={`mb-6 rounded-2xl border-2 p-5 ${
-              myRefunded
-                ? "border-green-200 dark:border-green-900/50 bg-green-900 dark:bg-green-900/20"
-                : myRefundPending
-                ? "border-amber-200 dark:border-amber-900/50 bg-amber-900 dark:bg-amber-900/20"
-                : "border-gray-200 dark:border-gray-800 bg-gray-900 dark:bg-[#151A27]"
+             myRefunded
+  ? "border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-900/20"
+  : myRefundPending
+  ? "border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20"
+  : "border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-[#151A27]"
             }`}
           >
             <div className="flex items-start gap-3">
@@ -1057,6 +1057,10 @@ const myRefundAmount = Number(
                 <li className="flex items-start gap-2">
                   <span className="text-amber-600 dark:text-amber-400 mt-1">•</span>
                   <span>If you need to reschedule, contact us at least 24 hours in advance</span>
+                </li>
+                 <li className="flex items-start gap-2">
+                  <span className="text-amber-600 dark:text-amber-400 mt-1">•</span>
+                  <span>If the the other party doesn't pay in 24 hours or cancel the meeting, you will receive a refund</span>
                 </li>
               </>
             )}

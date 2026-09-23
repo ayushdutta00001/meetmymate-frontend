@@ -33,6 +33,7 @@ export function BlindDatePaymentNew({
 }: BlindDatePaymentNewProps) {
   const [processing, setProcessing] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const [bookingData, setBookingData] =
     useState<BlindDatePaymentData | null>(null);
@@ -609,16 +610,35 @@ export function BlindDatePaymentNew({
                     Payment Protection
                   </h4>
 
-                  <p className="text-sm text-blue-800 dark:text-blue-300 leading-relaxed">
-                    You'll be charged now. If no match is found within your availability window,
-                    the <strong>full amount will be refunded automatically</strong>. Your payment
-                    is completely protected.
-                  </p>
+                 <p className="text-sm text-blue-800 dark:text-blue-300 leading-relaxed">
+  You'll be charged now. We will try to arrange your Blind Date within
+  <strong> 24 hours of payment</strong>. If no match is found within that
+  period, your <strong>full payment will be refunded automatically</strong>.
+</p>
                 </div>
 
               </div>
             </motion.div>
+<label className="flex items-start gap-3 mb-6 p-4 rounded-xl border border-gray-200 dark:border-gray-800 cursor-pointer">
+  <input
+    type="checkbox"
+    checked={agreed}
+    onChange={(e) => setAgreed(e.target.checked)}
+    className="mt-1"
+  />
 
+  <span className="text-sm text-gray-700 dark:text-gray-300">
+    I agree to the{" "}
+    <button
+      type="button"
+      onClick={() => onNavigate("terms")}
+      className="text-blue-600 dark:text-blue-400 hover:underline"
+    >
+      Terms of Service
+    </button>{" "}
+    and understand the Blind Date booking and payment terms.
+  </span>
+</label>
             {/* =================================================
                RAZORPAY PAYMENT
             ================================================== */}

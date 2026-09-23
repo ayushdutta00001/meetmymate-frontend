@@ -456,7 +456,7 @@ export function P2PPeerPaymentScreen({
           "INR",
 
         name:
-          "Rent a Friend",
+          "MeetMyMateIn",
 
         description:
           `P2P Meeting Payment - ${meeting.id}`,

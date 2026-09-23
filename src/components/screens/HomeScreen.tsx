@@ -933,7 +933,8 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
               mb-6
             "
           >
-            Choose your experience — every match is identity-verified, meets in public, and protected by our refund guarantee.
+            Explore real-world meeting services with clear booking information,
+service terms, and applicable refund policies.
           </motion.p>
 
           {/* FILTERS */}
@@ -1131,7 +1132,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                         shadow-lg
                       ">
                         <Sparkles className="w-3 h-3" />
-                        Most Popular
+                        Meeting Service
                       </span>
 
                       {/* REAL BOOKING DATA */}
@@ -1188,7 +1189,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                       border-white/20
                       text-white/90
                     ">
-                      21+ Verified Only
+                     Eligibility Required
                     </span>
 
                   </div>
@@ -1206,10 +1207,10 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                   ">
 
                     {[
-                      'Anonymous Reveal',
-                      'Public Venue',
-                      'Refund Protected',
-                    ].map((tag) => (
+  'Meeting Arrangement',
+  'Public Meeting Policy',
+  'Refund Policy Applies',
+].map((tag) => (
                       <span
                         key={tag}
                         className="
@@ -1264,127 +1265,129 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                       max-w-sm
                       leading-relaxed
                     ">
-                      System-arranged public meetings for verified adults. Anonymous until the moment you meet.
+                    A system-arranged meeting experience for eligible adults.
+  Meeting arrangements follow the service terms.
                     </p>
+<p className="mt-1 text-xs leading-4 text-white/65">
+  Personal meeting expenses are not included.
+</p>
+                  
+ {/* REAL STATS */}
 
-                    {/* REAL STATS */}
+                <div className="
+                  flex
+                  items-center
+                  gap-5
+                  mb-5
+                  flex-wrap
+                ">
 
-                    <div className="
-                      flex
-                      items-center
-                      gap-5
-                      mb-5
-                      flex-wrap
-                    ">
+                  {[
+                    {
+                      icon: Users,
+                      val:
+                        stats.paidBlindDateBookings.toLocaleString(),
+                      label:
+                        'Paid bookings',
+                    },
+                    {
+                      icon: Heart,
+                      val:
+                        stats.blindDateMatches.toLocaleString(),
+                      label:
+                        'Your matches',
+                    },
+                    {
+                      icon: Clock,
+                      val:
+                        stats.awaitingBlindDateMatch.toLocaleString(),
+                      label:
+                        'Awaiting match',
+                    },
+                  ].map((stat) => {
+                    const Icon =
+                      stat.icon;
 
-                      {[
-                        {
-                          icon: Users,
-                          val:
-                            stats.paidBlindDateBookings.toLocaleString(),
-                          label:
-                            'Paid bookings',
-                        },
-                        {
-                          icon: Heart,
-                          val:
-                            stats.blindDateMatches.toLocaleString(),
-                          label:
-                            'Your matches',
-                        },
-                        {
-                          icon: Clock,
-                          val:
-                            stats.awaitingBlindDateMatch.toLocaleString(),
-                          label:
-                            'Awaiting match',
-                        },
-                      ].map((stat) => {
-                        const Icon =
-                          stat.icon;
-
-                        return (
-                          <div
-                            key={
-                              stat.label
-                            }
-                            className="
-                              flex
-                              items-center
-                              gap-1.5
-                            "
-                          >
-                            <Icon className="
-                              w-3.5
-                              h-3.5
-                              text-pink-300
-                            " />
-
-                            <span className="
-                              text-white
-                              text-xs
-                              font-bold
-                            ">
-                              {stat.val}
-                            </span>
-
-                            <span className="
-                              text-white/45
-                              text-xs
-                            ">
-                              {stat.label}
-                            </span>
-                          </div>
-                        );
-                      })}
-
-                    </div>
-
-                    <div className="flex items-center gap-3">
-
-                      <motion.button
-                        whileHover={{
-                          scale: 1.04,
-                        }}
-                        whileTap={{
-                          scale: 0.97,
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onNavigate(
-                            'blind-date'
-                          );
-                        }}
+                    return (
+                      <div
+                        key={
+                          stat.label
+                        }
                         className="
                           flex
                           items-center
-                          gap-2
-                          px-6
-                          py-3
-                          rounded-2xl
-                          bg-gradient-to-r
-                          from-violet-500
-                          to-purple-600
-                          text-white
-                          font-bold
-                          text-sm
-                          shadow-xl
-                          hover:shadow-2xl
-                          transition-shadow
+                          gap-1.5
                         "
                       >
-                        Book Now
-                        <ArrowRight className="w-4 h-4" />
-                      </motion.button>
+                        <Icon className="
+                          w-3.5
+                          h-3.5
+                          text-pink-300
+                        " />
 
-                      <span className="
-                        text-white/40
-                        text-xs
-                      ">
-                        Pricing shown at booking
-                      </span>
+                        <span className="
+                          text-white
+                          text-xs
+                          font-bold
+                        ">
+                          {stat.val}
+                        </span>
 
-                    </div>
+                        <span className="
+                          text-white/45
+                          text-xs
+                        ">
+                          {stat.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+
+                </div>
+               <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+  <button
+    onClick={(event) => {
+      event.stopPropagation();
+      onNavigate('blind-date');
+    }}
+    className="
+      inline-flex
+      items-center
+      gap-2
+      rounded-xl
+      bg-gradient-to-r
+      from-violet-500
+      to-purple-600
+      px-4
+      py-2.5
+      text-sm
+      font-semibold
+      text-white
+      transition
+      hover:brightness-110
+      focus:outline-none
+      focus:ring-2
+      focus:ring-violet-300
+    "
+  >
+    View Booking Details
+    <ArrowRight className="h-4 w-4" />
+  </button>
+
+  <div className="min-w-0 text-left sm:text-right">
+    <p className="text-sm font-bold text-white">
+      ₹399 per person
+    </p>
+
+    <p className="text-[11px] leading-4 text-white/70">
+      Refund policy applies
+    </p>
+
+    <p className="text-[11px] leading-4 text-white/60">
+      Personal expenses excluded
+    </p>
+  </div>
+</div>
 
                   </div>
 
@@ -1608,10 +1611,10 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                   ">
 
                     {[
-                      'Equal Matching',
-                      'Co-Founder Ready',
-                      'Investor Access',
-                    ].map((tag) => (
+  'Professional Connections',
+  'Peer-to-Peer Meetings',
+  'Offline Arrangement',
+].map((tag) => (
                       <span
                         key={tag}
                         className="
@@ -1656,18 +1659,17 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                           "'Outfit', sans-serif",
                       }}
                     >
-                     PartnerUp (p2p meetings)
+                     Partner-Up
                     </h2>
 
-                    <p className="
-                      text-white/65
-                      text-sm
-                      mb-5
-                      max-w-sm
-                      leading-relaxed
-                    ">
-                      Connect as equals with verified peers ready to collaborate, partner, or co-found something great.
-                    </p>
+                   <p className="mt-2 max-w-[440px] text-sm leading-5 text-white/90">
+  Explore professional connections and request meaningful offline
+  meetings with peers and collaborators.
+</p>
+
+<p className="mt-1 text-xs leading-4 text-white/65">
+  Meeting arrangements follow the applicable service terms.
+</p>
 
                     {/* REAL STATS */}
 
@@ -1781,7 +1783,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                           transition-shadow
                         "
                       >
-                        Find a Peer
+                       Explore Profiles
                         <ArrowLeftRight className="w-4 h-4" />
                       </motion.button>
 
@@ -1789,7 +1791,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                         text-white/40
                         text-xs
                       ">
-                        Free to browse
+                        Browse profiles · Payment terms apply
                       </span>
 
                     </div>
@@ -1831,7 +1833,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
     {
       icon: Shield,
       val: stats.verifiedUsers.toLocaleString(),
-      label: 'Verified Users',
+     label: 'Profiles Verified',
 
       card:
         'bg-gradient-to-br from-blue-500/20 via-blue-400/10 to-cyan-400/20 dark:from-blue-500/20 dark:via-blue-500/10 dark:to-cyan-500/15',
@@ -2059,7 +2061,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
               damping: 22,
             }}
             onClick={() =>
-              onNavigate('blind-date')
+               onNavigate('p2p-peer-listing')
             }
             className="
               relative
@@ -2169,7 +2171,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                     uppercase
                     tracking-[0.2em]
                   ">
-                    Smart Matching
+                    Professional Connections
                   </span>
                 </div>
 
@@ -2187,14 +2189,14 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
                       "'Outfit', sans-serif",
                   }}
                 >
-                  Find My Perfect Match
+                  Explore PartnerUp
                 </h3>
 
                 <p className="
                   text-white/60  
                   text-sm
                 ">
-                  Explore matching options based on your preferences and activity
+                  Browse professional profiles and request an offline meeting.
                 </p>
 
               </div>
