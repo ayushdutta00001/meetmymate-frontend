@@ -489,7 +489,10 @@ export function P2PRequestsHubScreen({
       } = await supabase.rpc(
         'get_current_p2p_price'
       );
-
+console.log(
+  "🔥 P2P PRICE RPC RESULT:",
+  currentP2PPrice
+);
       if (p2pPriceError) {
         console.error(
           'P2P current price RPC error:',
@@ -510,7 +513,10 @@ export function P2PRequestsHubScreen({
       const defaultMeetingPrice = Number(
         currentP2PPrice
       );
-
+console.log(
+  "🔥 P2P PRICE RPC RESULT:",
+  currentP2PPrice
+);
       if (
         !Number.isFinite(defaultMeetingPrice) ||
         defaultMeetingPrice <= 0
