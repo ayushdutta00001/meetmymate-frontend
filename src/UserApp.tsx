@@ -1011,13 +1011,14 @@ const showFooter =
     peerId={selectedPeerId}   // ✅ THIS IS THE ONLY REQUIRED CHANGE
   />
 )}
-          {currentScreen === 'p2p-request-status' && (
-           <P2PRequestStatusScreen
-  onNavigate={navigate}
-  onBack={handleBack}
-  peerId={selectedPeerId}
-/>
-          )}
+         {currentScreen === 'p2p-request-status' && (
+  <P2PRequestStatusScreen
+    onNavigate={navigate}
+    onBack={handleBack}
+    peerId={selectedPeerId}
+    setSelectedRequestId={setSelectedRequestId}
+  />
+)}
           {currentScreen === 'p2p-incoming-requests' && (
   <P2PIncomingRequestsScreen
     onNavigate={navigate}

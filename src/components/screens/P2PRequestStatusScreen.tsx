@@ -14,6 +14,7 @@ interface P2PRequestStatusScreenProps {
   onNavigate: (page: string) => void;
   onBack: () => void;
   peerId: string | null;
+  setSelectedRequestId: (id: string) => void;
 }
 
 type RequestStatus =
@@ -40,6 +41,7 @@ export function P2PRequestStatusScreen({
   onNavigate,
   onBack,
   peerId,
+  setSelectedRequestId,
 }: P2PRequestStatusScreenProps) {
   const [status, setStatus] =
     useState<RequestStatus>('pending');
@@ -48,6 +50,7 @@ export function P2PRequestStatusScreen({
     useState<RequestDetails | null>(null);
 
   const [loading, setLoading] = useState(true);
+  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadP2PStatus = async () => {
@@ -107,6 +110,11 @@ export function P2PRequestStatusScreen({
           setRequestDetails(null);
           return;
         }
+
+        // Keep the exact request ID in the parent navigation state.
+        // The payment screen loads the meeting by this request ID.
+        setCurrentRequestId(data.id);
+        setSelectedRequestId(data.id);
 
         // ============================================
         // NORMALIZE USER RELATION
@@ -173,7 +181,7 @@ export function P2PRequestStatusScreen({
     };
 
     loadP2PStatus();
-  }, [peerId]);
+  }, [peerId, setSelectedRequestId]);
 
   // ============================================
   // REALTIME STATUS UPDATES
@@ -544,9 +552,11 @@ export function P2PRequestStatusScreen({
             className="flex gap-3"
           >
             <button
-              onClick={() =>
-                onNavigate("p2p-peer-payment")
-              }
+              onClick={() => {
+                if (!currentRequestId) return;
+                setSelectedRequestId(currentRequestId);
+                onNavigate("p2p-peer-payment");
+              }}
               className="flex-1 px-6 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-all"
             >
               Proceed to Payment
