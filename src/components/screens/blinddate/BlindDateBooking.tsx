@@ -352,18 +352,17 @@ export function BlindDateBooking({
                   value={formData.preferredLocations.join(
                     '\n'
                   )}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      preferredLocations:
-                        e.target.value
-                          .split('\n')
-                          .map((s) =>
-                            s.trim()
-                          )
-                          .filter(Boolean),
-                    })
-                  }
+                onChange={(e) =>
+  setFormData({
+    ...formData,
+    preferredLocations:
+      e.target.value
+        .split('\n')
+        .filter((s) =>
+          s.trim().length > 0
+        ),
+  })
+}
                   rows={3}
                   placeholder={`Example:
 • South City Mall
