@@ -194,7 +194,7 @@ export function Logo({ size = 'medium', animated = false, showText = true }: Log
                 letterSpacing: '0.1em',
               }}
             >
-              Book People. Save Time.
+              Arranging Public Social Meetings
             </span>
           )}
         </div>

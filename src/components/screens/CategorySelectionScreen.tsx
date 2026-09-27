@@ -48,7 +48,7 @@ export function CategorySelectionScreen({ onNavigate, onBack }: CategorySelectio
         animate={{ opacity: 1, y: 0 }}
         className="sticky top-0 z-40 bg-white dark:bg-[#0A0F1F] border-b border-gray-200 dark:border-gray-800"
       >
-        <ResponsiveContainer maxWidth="7xl">
+        <ResponsiveContainer maxWidth="2xl">
           <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6">
             <motion.h2
               initial={{ opacity: 0, x: -20 }}
@@ -63,14 +63,15 @@ export function CategorySelectionScreen({ onNavigate, onBack }: CategorySelectio
               transition={{ delay: 0.2 }}
               className="text-sm text-gray-600 dark:text-gray-400 mt-2"
             >
-              Book People. Save Time.
+              Select a service to get started. Each service is designed to provide unique experiences and connections.
+
             </motion.p>
           </div>
         </ResponsiveContainer>
       </motion.div>
 
       {/* Main Content */}
-      <ResponsiveContainer maxWidth="7xl">
+      <ResponsiveContainer maxWidth="2xl">
         <div className="px-4 md:px-6 lg:px-8 py-6 md:py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {categories.map((category, index) => {

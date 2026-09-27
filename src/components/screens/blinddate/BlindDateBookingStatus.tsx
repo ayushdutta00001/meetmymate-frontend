@@ -297,7 +297,7 @@ const currentStep = STEP_FOR_STATUS[uiStatus];
                <BackButton onClick={() => onNavigate("bookings")} />
              
               <div>
-                <h2>Blind Date Status</h2>
+                <h2>Blind Mate Status</h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Track your booking in real time</p>
               </div>
             </div>
@@ -850,7 +850,7 @@ const current =
       <div>
 
         <p className="text-pink-100 text-sm">
-          Your Blind Date Partner
+          Your Blind Mate 
         </p>
 
         <h3 className="text-white text-xl font-bold">
@@ -1225,7 +1225,7 @@ const current =
             <div>
               <h4 className="mb-2 text-blue-900 dark:text-blue-400">100% Refund Protection</h4>
               <p className="text-sm text-blue-800 dark:text-blue-300 leading-relaxed">
-                If we are unable to arrange your Blind Date within the eligible period, your payment will be automatically refunded to your original payment method.
+                If we are unable to arrange your Meeting within the eligible period, your payment will be automatically refunded to your original payment method.
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <CheckCircle className="w-4 h-4 text-green-500" />

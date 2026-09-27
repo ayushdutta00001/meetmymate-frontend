@@ -29,10 +29,10 @@ export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) 
             >
               <Shield className="w-10 h-10 text-white" />
             </motion.div>
-            <h1 className="mb-3">Blind Date</h1>
+            <h1 className="mb-3">Blind Mate</h1>
             <h2 className="mb-2">We arrange. You meet.</h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-              Share your availability, and we'll arrange a blind date for you.
+              Share your availability, and we'll arrange a meeting for you.
               <br />
               No browsing. No chatting. Just genuine connection.
             </p>
@@ -54,7 +54,7 @@ export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) 
   onClick={() => onNavigate('blind-date-booking')}
   className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl font-medium" 
 >
-  Book a Blind Date 
+  Book a Blind Mate 
 </button>
          
         </motion.div>
@@ -77,7 +77,7 @@ export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) 
               },
               {
                 icon: Shield,
-                title: 'Verified Adults 21+',
+                title: 'Verified Adults 18+',
                 desc: 'Age and identity verification required for all participants',
               },
               {
@@ -126,10 +126,7 @@ export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) 
               <span className="text-gray-400 mt-1">•</span>
               <span>Payment is for arranging the meeting, not for guaranteed compatibility</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Maximum 4 blind dates per user per month</span>
-            </li>
+            
           </ul>
         </motion.div>
 

@@ -310,7 +310,7 @@ export function OpeningScreen({ onComplete }: OpeningScreenProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6, duration: 0.5 }}
                 >
-                  Book People. Save Time.
+                  Arranging Public Social Meetings
                 </motion.div>
               </motion.div>
 

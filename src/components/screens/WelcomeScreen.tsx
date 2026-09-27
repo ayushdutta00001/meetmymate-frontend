@@ -14,7 +14,7 @@ export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeSc
   const features = [
     {
       icon: Heart,
-      label: 'Blind Dates',
+      label: 'Blind Mates',
       color: 'from-pink-500 to-rose-500',
     },
     {
@@ -69,7 +69,7 @@ export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeSc
           </h2>
 
           <p className="text-white/80">
-            Your time is valuable. Book meaningful connections for friendship, romance, or business.
+           Book your meetings we will arrange the rest. No browsing, no chatting, just genuine connection.
           </p>
         </motion.div>
 
