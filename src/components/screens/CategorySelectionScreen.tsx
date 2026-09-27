@@ -22,7 +22,7 @@ export function CategorySelectionScreen({ onNavigate, onBack }: CategorySelectio
     },
     {
       id: 'blind-date',
-      title: 'Blind Date',
+      title: 'Blind Mate',
       subtitle: 'System-arranged public meetings for verified adults',
       icon: Heart,
       gradient: 'from-blue-600 via-indigo-600 to-blue-700',

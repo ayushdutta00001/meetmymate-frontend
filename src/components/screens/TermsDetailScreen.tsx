@@ -1,6 +1,16 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Shield, AlertTriangle, FileText, Lock, Users, CreditCard, Ban, Scale, Globe } from 'lucide-react';
+import {
+  ArrowLeft,
+  Shield,
+  AlertTriangle,
+  FileText,
+  Lock,
+  Users,
+  CreditCard,
+  Ban,
+  Scale,
+} from 'lucide-react';
 import { Logo } from '../Logo';
 
 interface TermsDetailScreenProps {
@@ -12,83 +22,134 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
     {
       icon: FileText,
       title: '1. Acceptance of Terms',
-      content: `By accessing and using Meet My Mate in ("the Platform"), you accept and agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use the Platform. We reserve the right to modify these terms at any time, and your continued use of the Platform constitutes acceptance of any modifications.`
+      content:
+        'By accessing or using Meet My Mate in ("the Platform"), you agree to these Terms & Conditions. If you do not agree with these terms, you should not use the Platform. We may update these terms from time to time, and the updated version will apply from the date it is posted or otherwise made available to users.',
     },
+
     {
       icon: Shield,
-      title: '2. Age Requirements & User Eligibility',
-      content: `You must be at least 18 years of age to use this Platform. By registering, you represent and warrant that you are of legal age. All users must complete identity verification before accessing premium features. False information provided during registration will result in immediate account termination.`
+      title: '2. Age Requirements & Eligibility',
+      content:
+        'You must be at least 18 years old to use Meet My Mate in. By registering or using the Platform, you confirm that the information you provide is accurate and that you are legally eligible to use the service. We may require identity or age verification where necessary for safety, service access, or legal compliance.',
     },
+
     {
       icon: Users,
-      title: '3. User Conduct & Community Guidelines',
-      content: `Users must maintain respectful and appropriate conduct at all times. Prohibited behaviors include: harassment, discrimination, hate speech, sexual misconduct, solicitation for illegal activities, impersonation, spamming, and sharing of explicit content. Violations will result in warnings, temporary suspension, or permanent account termination depending on severity.`
+      title: '3. Our Current Services',
+      content:
+        'Meet My Mate in currently provides two services: (1) Blind Mate, which is an arranged offline meeting experience between participants, and (2) PartnerUp, which facilitates offline professional or collaborative meetings between participants. No other service is covered by these Terms unless expressly added to the Platform in the future.',
     },
+
     {
-      icon: Lock,
-      title: '4. Privacy & Data Protection',
-      content: `We take your privacy seriously. Personal information is collected, stored, and processed in accordance with applicable data protection laws. We will never share your personal information with third parties without your explicit consent, except as required by law. Users are responsible for maintaining the confidentiality of their account credentials.`
+      icon: Users,
+      title: '4. Blind Mate',
+      content:
+        'Blind Mate is an offline meeting arrangement service. A user provides the required preferences and booking information, completes the applicable payment, and waits for the service to arrange an appropriate meeting. When the service flow requires it, relevant contact details may be shared with the matched participant so the meeting can be coordinated or attended.',
     },
+
+    {
+      icon: Users,
+      title: '5. PartnerUp',
+      content:
+        'PartnerUp is an offline professional and collaborative meeting service. Users may create a profile containing relevant professional or collaboration information. When participants connect and the applicable service conditions are completed, relevant profile information and contact details may be shared between participants as required to arrange the meeting.',
+    },
+
     {
       icon: AlertTriangle,
-      title: '5. Safety Guidelines',
-      content: `Always meet in public places for first meetings. Inform a friend or family member of your plans. Never share financial information, passwords, or sensitive personal data with other users. Use in-app messaging initially before sharing personal contact information. Report any suspicious behavior immediately through our reporting system.`
+      title: '6. No Guaranteed Match or Outcome',
+      content:
+        'Meet My Mate in does not guarantee that a user will be matched with a person they consider suitable, nor does it guarantee any particular outcome from a meeting. We do not guarantee friendship, dating, romance, compatibility, chemistry, business cooperation, partnership, co-founder relationships, mentorship, investment, employment, or any other personal or professional relationship or result. Our role is limited to providing the applicable meeting arrangement or facilitation service.',
     },
+
     {
-      icon: CreditCard,
-      title: '6. Payment Terms',
-      content: `Fees for services are clearly stated before purchase. All payments are processed securely through our approved payment processors. Refunds are available within 24 hours of booking cancellation, subject to our cancellation policy. Users agree to pay all fees associated with their account. Failure to pay may result in service suspension.`
+      icon: Lock,
+      title: '7. Information Sharing for Meeting Arrangements',
+      content:
+        'Because our services involve real-world meetings, certain information must be shared between participants to enable those meetings to take place. For Blind Mate, contact details may be shared with the matched participant when required by the service flow. For PartnerUp, relevant profile information and contact details may be shared with the other participant when required to arrange the meeting. Users should provide only accurate information that they are authorized to share.',
     },
+
+    {
+      icon: Shield,
+      title: '8. User Safety',
+      content:
+        'Users are responsible for taking reasonable precautions before and during any offline meeting. Meet in appropriate public or agreed locations, remain aware of your surroundings, and seek help when necessary. You should not share passwords, payment credentials, financial account information, or other unnecessary sensitive information with another participant.',
+    },
+
     {
       icon: Ban,
-      title: '7. Prohibited Activities',
-      content: `The following activities are strictly prohibited: commercial solicitation without authorization, promotion of illegal activities, creation of fake accounts or bot activity, scraping or unauthorized data collection, circumvention of security measures, resale of accounts or services, and use of the Platform for any unlawful purpose.`
+      title: '9. Prohibited Conduct',
+      content:
+        'Users must not use the Platform for harassment, threats, fraud, impersonation, discrimination, sexual misconduct, unlawful activity, malicious activity, spam, unauthorized data collection, or conduct that creates a safety risk for another person. We may restrict, suspend, or terminate accounts where we reasonably believe these terms have been violated.',
     },
+
+    {
+      icon: CreditCard,
+      title: '10. Payment Terms',
+      content:
+        'Applicable service prices are displayed before payment. Payments are processed through our payment provider. You are responsible for providing accurate payment and booking information. Payment status, order information, transaction references, and refund information may be processed as necessary to operate the service.',
+    },
+
+    {
+      icon: CreditCard,
+      title: '11. Blind Mate Refund Condition',
+      content:
+        'For Blind Mate, the applicable booking flow provides for a full refund when the service does not arrange a match within the stated 24-hour matching period, subject to successful payment verification and the conditions shown in the applicable booking flow. The service fee and refund conditions displayed at the time of booking form part of the applicable service terms.',
+    },
+
     {
       icon: Scale,
-      title: '8. Liability & Disclaimers',
-      content: `Meet My Mate in is a platform connecting individuals for social purposes. We are not responsible for interactions, meetings, or transactions that occur off-platform. Users assume all risks associated with in-person meetings. The Platform is provided "as is" without warranties of any kind. We are not liable for any damages arising from use of the Platform.`
+      title: '12. Offline Meetings & Responsibility',
+      content:
+        'Meet My Mate in arranges or facilitates the meeting but does not control what participants say, do, decide, or agree to during or after the meeting. Users remain responsible for their own conduct and decisions. We are not responsible for whether participants choose to date, become friends, continue communicating, work together, form a business relationship, or have any other relationship or outcome after meeting.',
     },
-    {
-      icon: Users,
-      title: '9. User-Generated Content',
-      content: `Users retain ownership of their profile content but grant Meet My Mate in a license to use, display, and distribute such content on the Platform. You represent that you have all necessary rights to the content you post. We reserve the right to remove any content that violates these terms or is otherwise objectionable.`
-    },
-    {
-      icon: Globe,
-      title: '10. Intellectual Property',
-      content: `All Platform content, including logos, designs, text, graphics, and software, is the property of Meet My Mate in or its licensors. Users may not copy, modify, distribute, or create derivative works without explicit written permission. Unauthorized use may result in legal action.`
-    },
-    {
-      icon: AlertTriangle,
-      title: '11. Account Termination',
-      content: `We reserve the right to suspend or terminate accounts at our discretion for violations of these terms, suspicious activity, or fraudulent behavior. Users may terminate their accounts at any time through account settings. Upon termination, access to the Platform will be revoked immediately.`
-    },
-    {
-      icon: Scale,
-      title: '12. Dispute Resolution',
-      content: `Any disputes arising from use of the Platform shall be resolved through binding arbitration. Users agree to first attempt resolution through our customer support before pursuing legal action. The laws of the jurisdiction where Meet My Mate in is registered shall govern these terms.`
-    },
-    {
-      icon: Shield,
-      title: '13. Verification & Background Checks',
-      content: `While we implement verification procedures, we do not conduct comprehensive background checks. Users are responsible for their own safety and due diligence. Verification badges indicate identity confirmation only and do not guarantee trustworthiness or safety.`
-    },
-    {
-      icon: FileText,
-      title: '14. Booking & Cancellation Policy',
-      content: `Bookings are confirmed upon payment. Cancellations made 24+ hours before the scheduled meeting are eligible for full refund. Cancellations within 24 hours may incur fees. No-shows without notice will result in no refund. Repeated cancellations may lead to account restrictions.`
-    },
+
     {
       icon: Lock,
-      title: '15. Data Security Notice',
-      content: `Meet My Mate in is NOT designed for collecting highly sensitive PII (Personally Identifiable Information) or securing sensitive data. Do not share financial account details, social security numbers, passwords, or other highly confidential information through this Platform. We cannot guarantee absolute security of transmitted data.`
+      title: '13. Privacy & Data Protection',
+      content:
+        'We collect and process information needed to create accounts, operate the Platform, arrange meetings, process payments, provide support, maintain safety, and comply with applicable requirements. Information may be shared with meeting participants when necessary under the applicable service flow. Additional details about personal-data handling are provided in our Privacy Policy.',
+    },
+
+    {
+      icon: FileText,
+      title: '14. User Information & Accuracy',
+      content:
+        'You are responsible for ensuring that the information you provide to Meet My Mate in is accurate, current, and not misleading. This includes account details, profile information, preferences, contact information, and meeting-related information. Providing false or deceptive information may result in service restrictions or account termination.',
+    },
+
+    {
+      icon: Ban,
+      title: '15. Account Suspension or Termination',
+      content:
+        'We may suspend or terminate access to an account where required for safety, fraud prevention, policy enforcement, unlawful activity, misuse of the Platform, or violation of these Terms. Users may stop using the Platform at any time, subject to any transaction or service obligations that have already arisen.',
+    },
+
+    {
+      icon: Scale,
+      title: '16. Liability & Disclaimers',
+      content:
+        'Meet My Mate in provides a meeting arrangement and facilitation service. To the extent permitted by applicable law, we do not guarantee that a meeting will result in a particular personal or professional outcome. We are not responsible for the independent acts, statements, decisions, conduct, or relationships of users outside the specific service operations we control. Users are responsible for exercising their own judgment and taking appropriate safety precautions.',
+    },
+
+    {
+      icon: FileText,
+      title: '17. Changes to Services or Terms',
+      content:
+        'We may modify, suspend, discontinue, or update features, service flows, pricing, or these Terms when necessary for operational, legal, security, or business reasons. The applicable terms presented to you at the time of a transaction may govern that transaction where required.',
+    },
+
+    {
+      icon: Scale,
+      title: '18. Governing Terms & Contact',
+      content:
+        'Questions, concerns, or complaints regarding these Terms or a service should be directed to Meet My Mate in through the support contact provided on the Platform. Any applicable legal rights, remedies, and dispute procedures will be governed by applicable law.',
     },
   ];
 
   return (
     <div className="min-h-screen bg-[#F2F4F7] dark:bg-[#0A0F1F] py-8 px-4">
       <div className="max-w-5xl mx-auto">
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -102,14 +163,17 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
             <ArrowLeft className="w-5 h-5" />
             Back
           </button>
-          
+
           <div className="flex flex-col items-center mb-6">
             <Logo size="medium" />
           </div>
-          
-          <h1 className="text-center mb-2">Complete Terms & Conditions</h1>
+
+          <h1 className="text-center mb-2">
+            Complete Terms & Conditions
+          </h1>
+
           <p className="text-gray-600 dark:text-gray-400 text-center">
-            Last Updated: December 9, 2025
+            Last Updated: September 27, 2026
           </p>
         </motion.div>
 
@@ -121,13 +185,18 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
         >
           <div className="flex items-start gap-4">
             <AlertTriangle className="w-8 h-8 text-yellow-700 dark:text-yellow-400 flex-shrink-0 mt-1" />
+
             <div>
               <h3 className="text-yellow-800 dark:text-yellow-300 mb-2">
-                Legal Agreement - Please Read Carefully
+                Important Notice
               </h3>
-              <p className="text-yellow-700 dark:text-yellow-400 text-sm">
-                These Terms and Conditions constitute a legally binding agreement between you and Meet My Mate in. 
-                By using our Platform, you acknowledge that you have read, understood, and agree to be bound by all terms outlined below.
+
+              <p className="text-yellow-700 dark:text-yellow-400 text-sm leading-relaxed">
+                Meet My Mate in arranges real-world offline meetings.
+                We do not guarantee compatibility or any personal or
+                professional relationship or outcome between participants.
+                Users are responsible for their own conduct, decisions,
+                communications, and safety during and after meetings.
               </p>
             </div>
           </div>
@@ -137,6 +206,7 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
         <div className="space-y-6">
           {sections.map((section, index) => {
             const Icon = section.icon;
+
             return (
               <motion.div
                 key={index}
@@ -146,24 +216,30 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
                 className="glass dark:glass-dark rounded-3xl p-6 md:p-8"
               >
                 <div className="flex gap-4">
+
                   <div className="flex-shrink-0">
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#3C82F6] to-[#1F3C88] flex items-center justify-center">
                       <Icon className="w-7 h-7 text-white" />
                     </div>
                   </div>
+
                   <div className="flex-1">
-                    <h3 className="mb-3">{section.title}</h3>
+                    <h3 className="mb-3">
+                      {section.title}
+                    </h3>
+
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                       {section.content}
                     </p>
                   </div>
+
                 </div>
               </motion.div>
             );
           })}
         </div>
 
-        {/* Additional Legal Notices */}
+        {/* Contact Information */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -171,29 +247,14 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
           className="mt-8 space-y-4"
         >
           <div className="glass dark:glass-dark rounded-3xl p-6">
-            <h3 className="mb-3">16. Contact Information</h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              For questions regarding these Terms and Conditions, please contact us at:
-              <br />
-              Email: legal@meetmymatein.com
-              <br />
-              Support: support@meetmymatein.com
-            </p>
-          </div>
+            <h3 className="mb-3">
+              Contact Information
+            </h3>
 
-          <div className="glass dark:glass-dark rounded-3xl p-6">
-            <h3 className="mb-3">17. Severability</h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              If any provision of these Terms is found to be unenforceable or invalid, that provision will be limited 
-              or eliminated to the minimum extent necessary so that these Terms will otherwise remain in full force and effect.
-            </p>
-          </div>
-
-          <div className="glass dark:glass-dark rounded-3xl p-6">
-            <h3 className="mb-3">18. Entire Agreement</h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              These Terms and Conditions, along with our Privacy Policy and Community Guidelines, constitute the entire 
-              agreement between you and Meet My Mate in regarding the use of the Platform.
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              For questions regarding these Terms & Conditions, please contact
+              Meet My Mate in through the support contact details provided on
+              the Platform.
             </p>
           </div>
         </motion.div>
@@ -206,8 +267,9 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
           className="mt-12 text-center pb-8"
         >
           <p className="text-gray-500 dark:text-gray-500 text-sm mb-4">
-            © 2025 Meet My Mate in. All rights reserved.
+            © {new Date().getFullYear()} Meet My Mate in. All rights reserved.
           </p>
+
           <button
             onClick={onBack}
             className="text-[#3C82F6] dark:text-[#3758FF] hover:underline"
@@ -215,7 +277,10 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
             Return to Previous Page
           </button>
         </motion.div>
+
       </div>
     </div>
   );
 }
+
+export default TermsDetailScreen;

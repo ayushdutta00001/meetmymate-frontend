@@ -8,6 +8,7 @@ import {
   Lock,
   AlertTriangle,
   ArrowLeft,
+  Users,
 } from 'lucide-react';
 
 interface TermsScreenProps {
@@ -28,27 +29,33 @@ export function TermsScreen({
   const terms = [
     {
       icon: Shield,
-      title: 'Age Verification',
+      title: 'Age & Eligibility',
       content:
-        'You must be 18 years or older to use this platform. Users may be required to complete identity verification before using certain services.',
+        'You must be at least 18 years old to use Meet My Mate in. You are responsible for providing accurate information and using the Platform only for lawful purposes.',
+    },
+    {
+      icon: Users,
+      title: 'Our Services',
+      content:
+        'Meet My Mate in currently provides two services: Blind Mate and PartnerUp. Both services are designed to arrange real-world, offline meetings between users according to the applicable service flow.',
     },
     {
       icon: FileText,
-      title: 'Code of Conduct',
+      title: 'No Guaranteed Outcome',
       content:
-        'Respectful behavior is mandatory. Harassment, discrimination, threats, fraud, or inappropriate conduct may result in restrictions or termination of your account.',
+        'We arrange or facilitate the meeting, but we do not guarantee compatibility, chemistry, friendship, dating, romance, business cooperation, partnership, employment, investment, mentorship, or any other personal or professional outcome between users.',
     },
     {
       icon: Lock,
-      title: 'Privacy & Safety',
+      title: 'Information & Contact Sharing',
       content:
-        'We process account, verification, booking, and meeting-related information as needed to provide our services. Never share passwords, payment credentials, or other sensitive account information with another user.',
+        'To arrange meetings, we may share relevant information between participants. For Blind Mate, contact details may be shared with the matched participant when required by the service flow. For PartnerUp, relevant profile information and contact details may be shared with the other participant when required to arrange the meeting.',
     },
     {
       icon: AlertTriangle,
       title: 'Meeting Safety',
       content:
-        'Follow the safety guidance provided for your service. Meet only at the arranged public location, remain alert, and contact support if you encounter suspicious or unsafe behavior.',
+        'Meetings are offline and take place between users. Follow the safety instructions provided by Meet My Mate in, use appropriate judgment, and report suspicious, threatening, or unsafe behavior to support.',
     },
   ];
 
@@ -138,10 +145,11 @@ export function TermsScreen({
             </h4>
 
             <p className="text-yellow-700 dark:text-yellow-300 text-sm leading-relaxed">
-              Meet My Mate in provides services for real-world meeting
-              experiences and professional connections. Users are responsible
-              for their own conduct during and outside meetings. Always
-              prioritize your safety and report suspicious behavior to support.
+              Meet My Mate in provides offline meeting arrangement services.
+              We are not responsible for whether users develop a personal,
+              romantic, social, professional, business, or other relationship
+              after meeting. Users are responsible for their own conduct,
+              decisions, communications, and actions.
             </p>
           </div>
 
@@ -154,11 +162,13 @@ export function TermsScreen({
             </h4>
 
             <p className="text-blue-700 dark:text-blue-300 text-sm leading-relaxed">
-              We may collect and process information such as account details,
-              identity-verification information, booking details, and
-              meeting-related information to operate the platform, provide
-              services, maintain safety, and meet applicable requirements.
-              Payment details are processed through our payment provider.
+              We may collect and process account information, profile
+              information, booking information, contact details, payment
+              information, and meeting-related information as needed to
+              provide and manage our services. Where required for a meeting,
+              relevant information may be shared with the other participant
+              according to the applicable service flow. Payment information is
+              processed through our payment provider where applicable.
             </p>
           </div>
 
@@ -179,8 +189,7 @@ export function TermsScreen({
 
         {/* =========================================================
            ACCEPT SECTION
-           Hidden when opened from payment screen
-        ========================================================= */}
+           ========================================================= */}
         {showAcceptButton && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -219,8 +228,8 @@ export function TermsScreen({
 
               <span className="text-sm text-[#0B0B0C] dark:text-white group-hover:text-[#3C82F6] dark:group-hover:text-[#3758FF] transition-colors leading-relaxed">
                 I have read and agree to the Terms & Conditions, Privacy
-                Policy, and Community Guidelines. I confirm that I am 18
-                years or older and will use this platform responsibly.
+                Policy, and Safety Guidelines. I confirm that I am 18 years
+                or older and will use the Platform responsibly.
               </span>
             </label>
 
