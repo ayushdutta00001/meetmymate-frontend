@@ -43,9 +43,9 @@ export function P2PProfileCard({ profile, onViewProfile, onSendRequest, delay = 
         <div className="h-2 bg-gradient-to-r from-purple-500 via-blue-500 to-green-500" />
         
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4">
           {/* Header with Avatar */}
-          <div className="flex items-start gap-4 mb-4 pb-4 border-b-2 border-gray-100 dark:border-gray-800">
+         <div className="flex items-start gap-3 mb-2.5 pb-2.5 border-b border-gray-100 dark:border-gray-800">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
               <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 border-2 border-purple-300 dark:border-purple-700 shadow-md">
@@ -77,11 +77,11 @@ export function P2PProfileCard({ profile, onViewProfile, onSendRequest, delay = 
 
             {/* Info Section */}
             <div className="flex-1 min-w-0">
-              <h3 className="mb-2 truncate font-bold text-gray-900 dark:text-gray-100">
+              <h3 className="mb-1 truncate font-bold text-gray-900 dark:text-gray-100">
                 {profile.name}
               </h3>
               {/* Role/Profession - Purple Highlight */}
-              <div className="inline-block px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 shadow-md mb-2">
+              <div className="inline-block px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 shadow-md mb-1">
                 <p className="text-xs text-white font-bold">
                   {profile.role}
                 </p>
@@ -94,12 +94,12 @@ export function P2PProfileCard({ profile, onViewProfile, onSendRequest, delay = 
           </div>
 
           {/* Bio */}
-          <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 line-clamp-2 leading-relaxed">
+          <p className="text-sm text-gray-700 dark:text-gray-300  mb-2.5 line-clamp-2 leading-relaxed">
             {profile.bio}
           </p>
 
           {/* Industry & Experience */}
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <div className="flex items-center gap-2 mb-2.5 flex-wrap">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold shadow-sm">
               <Briefcase className="w-3.5 h-3.5" />
               <span>{profile.industry}</span>
@@ -111,8 +111,8 @@ export function P2PProfileCard({ profile, onViewProfile, onSendRequest, delay = 
 
           {/* Looking For - Orange Highlight */}
           {profile.lookingFor && profile.lookingFor.length > 0 && (
-            <div className="mb-4 p-3 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-2 border-orange-200 dark:border-orange-800 shadow-sm">
-              <p className="text-xs font-bold text-orange-700 dark:text-orange-400 mb-2 flex items-center gap-1.5">
+            <div className=" mb-2.5 p-3 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-2 border-orange-200 dark:border-orange-800 shadow-sm">
+              <p className="text-xs font-bold text-orange-700 dark:text-orange-400 mb-1 flex items-center gap-1.5">
                 <Target className="w-3.5 h-3.5" />
                 Looking For:
               </p>
@@ -136,8 +136,8 @@ export function P2PProfileCard({ profile, onViewProfile, onSendRequest, delay = 
 
           {/* Skills - Green Highlight */}
           {profile.skills.length > 0 && (
-            <div className="mb-5 p-3 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800 shadow-sm">
-              <p className="text-xs font-bold text-green-700 dark:text-green-400 mb-2 flex items-center gap-1.5">
+            <div className="mb-2.5 p-3 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800 shadow-sm">
+              <p className="text-xs font-bold text-green-700 dark:text-green-400 mb-1 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
                 Key Skills:
               </p>
@@ -158,9 +158,9 @@ export function P2PProfileCard({ profile, onViewProfile, onSendRequest, delay = 
               </div>
             </div>
           )}
-          <div className="h-4"></div>
+          <div className="flex gap-2 mt-2"></div>
           {/* Action Buttons */}
-          <div className="flex gap-2 mt-5">
+          <div className="flex gap-2 mt-2">
             {/* Primary Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
