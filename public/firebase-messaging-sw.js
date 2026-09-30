@@ -2,7 +2,7 @@ importScripts("https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"
 importScripts("https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js");
 
 firebase.initializeApp({
-  apiKey: "AIzaSyA1j-2_vGGADVDBnxStazO8O0E5tbLzY1A",
+  apiKey: "AIzaSyA1j-2_vGGADVDBnxStaz0O8E0tbLzY1A",
   authDomain: "meet-my-mate-v2.firebaseapp.com",
   projectId: "meet-my-mate-v2",
   storageBucket: "meet-my-mate-v2.firebasestorage.app",
@@ -37,6 +37,8 @@ self.addEventListener("notificationclick", function (event) {
     event.notification?.data?.url ||
     "https://meetmymatein.com/notifications";
 
+  const targetOrigin = "https://meetmymatein.com";
+
   event.waitUntil(
     clients.matchAll({
       type: "window",
@@ -45,7 +47,10 @@ self.addEventListener("notificationclick", function (event) {
 
       // If MeetMyMate is already open, focus it and navigate
       for (const client of clientList) {
-        if ("focus" in client) {
+        if (
+          client.url.startsWith(targetOrigin) &&
+          "focus" in client
+        ) {
           return client.focus().then(function () {
             return client.navigate(targetUrl);
           });
