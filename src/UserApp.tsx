@@ -170,11 +170,24 @@ export type Screen =
 export default function UserApp() {
  const { user, isAuthenticated, isLoading, signOut } = useAuth();
 
- const [currentScreen, setCurrentScreenState] = useState<Screen>(() => {
-  const savedScreen = sessionStorage.getItem('meetmymate_current_screen');
+ const getInitialScreen = (): Screen => {
+  const path = window.location.pathname;
 
-  return savedScreen ? (savedScreen as Screen) : 'opening';
-});
+  if (path === "/notifications") {
+    return "notifications";
+  }
+
+  const savedScreen = sessionStorage.getItem(
+    "meetmymate_current_screen"
+  );
+
+  return savedScreen
+    ? (savedScreen as Screen)
+    : "opening";
+};
+
+const [currentScreen, setCurrentScreenState] =
+  useState<Screen>(getInitialScreen);
  
   const [previousScreen, setPreviousScreen] = useState<Screen>('home');
   const [navigationHistory, setNavigationHistory] = useState<Screen[]>([]);

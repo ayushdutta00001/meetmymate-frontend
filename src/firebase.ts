@@ -103,13 +103,21 @@ export const listenToMessages = async () => {
   if (!msg) return;
 
   onMessage(msg, (payload) => {
-    console.log("🔥 FOREGROUND MESSAGE:", payload);
+  console.log("🔥 FOREGROUND MESSAGE:", payload);
 
-    if (Notification.permission === "granted") {
-      new Notification(payload.notification?.title || "New Message", {
+  if (Notification.permission === "granted") {
+    const notification = new Notification(
+      payload.notification?.title || "New Message",
+      {
         body: payload.notification?.body || "",
         icon: "/icon.png",
-      });
-    }
-  });
+      }
+    );
+
+    notification.onclick = () => {
+      window.focus();
+      window.location.href = "/notifications";
+    };
+  }
+});
 };
