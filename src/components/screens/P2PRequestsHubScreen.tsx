@@ -1148,417 +1148,434 @@ console.log(
                 );
               }
             )
-          ) : (
+                   ) : (
             incomingRequests.map(
-              (
-                request,
-                index
-              ) => {
+              (request, index) => {
                 /*
                  * IMPORTANT:
-                 * Find meeting by REQUEST ID,
-                 * never by peer ID.
+                 * Find meeting by REQUEST ID.
+                 * Never use peer ID for meeting lookup.
                  */
                 const meeting =
-                  meetingsMap[
-                    request.id
-                  ];
+                  meetingsMap[request.id];
 
                 const avatarGradient =
-                  getAvatarGradient(
-                    request.name
-                  );
+                  getAvatarGradient(request.name);
 
                 const statusConfig =
-                  getStatusConfig(
-                    request.status
-                  );
+                  getStatusConfig(request.status);
 
                 const StatusIcon =
                   statusConfig.icon;
 
                 return (
                   <motion.div
-                    key={
-                      request.id
-                    }
+                    key={request.id}
                     initial={{
                       opacity: 0,
-                      y: 20,
+                      y: 12,
                     }}
                     animate={{
                       opacity: 1,
                       y: 0,
                     }}
                     transition={{
-                      delay:
-                        index *
-                        0.05,
-                      duration: 0.3,
+                      delay: index * 0.04,
+                      duration: 0.25,
                     }}
-                    whileHover={{
-                      y: -4,
-                    }}
-                    className="group relative"
+                    className="group"
                   >
-                    <div className="w-full rounded-2xl bg-[#031a5a] border-2 border-emerald-400/70 hover:border-cyan-300 transition-all overflow-hidden shadow-lg shadow-cyan-500/10 hover:shadow-xl hover:shadow-cyan-500/20">
-                      {/* Top Bar */}
-                      <div className="h-2 bg-gradient-to-r from-purple-500 via-blue-500 to-green-500" />
+                    <div className="w-full overflow-hidden rounded-2xl bg-[#071126] border border-white/15 hover:border-blue-400/50 transition-all duration-200 shadow-lg hover:shadow-blue-500/10">
 
-                      <div className="p-6">
-                        {/* Header */}
-                        <div className="flex items-start gap-4 mb-4 pb-4 border-b-2 border-gray-100 dark:border-gray-800">
+                      {/* =========================================
+                          TOP ACCENT
+                         ========================================= */}
+                      <div className="h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400" />
+
+                      <div className="p-4">
+
+                        {/* =========================================
+                            PROFILE HEADER
+                           ========================================= */}
+                        <div className="flex items-center gap-3">
+
+                          {/* Avatar */}
                           <div className="relative flex-shrink-0">
-                            <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-800">
+                            <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/10">
                               {request.avatar ? (
                                 <img
-                                  src={
-                                    request.avatar
-                                  }
-                                  alt={
-                                    request.name
-                                  }
+                                  src={request.avatar}
+                                  alt={request.name}
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
                                 <div
-                                  className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${avatarGradient} text-white font-bold text-xl`}
+                                  className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${avatarGradient} text-white font-bold text-base`}
                                 >
-                                  {request.name?.charAt(
-                                    0
-                                  )}
+                                  {request.name?.charAt(0)}
                                 </div>
                               )}
                             </div>
 
                             {/* Verified */}
-                            <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center border-2 border-white dark:border-gray-900 shadow-md">
+                            <div className="absolute -right-1 -top-1 w-5 h-5 rounded-full bg-blue-500 border-2 border-[#071126] flex items-center justify-center">
                               <CheckCircle
-                                className="w-4 h-4 text-white"
+                                className="w-3 h-3 text-white"
                                 fill="white"
                               />
                             </div>
 
                             {/* Unread */}
                             {request.unread && (
-                              <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-purple-500 border-2 border-white dark:border-gray-900 shadow-sm animate-pulse" />
+                              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-purple-500 border-2 border-[#071126] animate-pulse" />
                             )}
                           </div>
 
-                          <div className="flex-1 min-w-0">
-                            <h3 className="mb-2 truncate font-bold text-gray-900 dark:text-gray-100">
-                              {request.name}
-                            </h3>
+                          {/* Name / Location */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="truncate text-[15px] font-bold text-white">
+                                {request.name}
+                              </h3>
 
-                            <div className="inline-block px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 shadow-md mb-2">
-                              <p className="text-xs text-white font-bold">
-                                {
-                                  request.role
-                                }
-                              </p>
+                              {request.role && (
+                                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md bg-purple-500/15 text-[9px] font-semibold text-purple-300 border border-purple-400/20">
+                                  {request.role}
+                                </span>
+                              )}
                             </div>
 
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              <MapPin className="w-3.5 h-3.5" />
-
-                              <span className="font-medium">
-                                {
-                                  request.location
-                                }
-                              </span>
-                            </div>
+                            {request.location && (
+                              <div className="flex items-center gap-1 mt-0.5 text-[11px] text-gray-400">
+                                <MapPin className="w-3 h-3" />
+                                <span className="truncate">
+                                  {request.location}
+                                </span>
+                              </div>
+                            )}
                           </div>
+
                         </div>
 
-                        {/* Purpose */}
-                        {request.purpose && (
-                          <div className="mb-4 p-4 rounded-xl border border-purple-500/50 bg-purple-500/5">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Sparkles className="w-4 h-4 text-purple-400" />
+                        {/* Divider */}
+                        <div className="my-3 h-px bg-white/8" />
 
-                              <span className="text-sm font-semibold text-purple-300">
+                        {/* =========================================
+                            PURPOSE
+                           ========================================= */}
+                        {request.purpose && (
+                          <div className="mb-3">
+                            <div className="flex items-center gap-1.5 mb-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+
+                              <span className="text-[10px] font-semibold uppercase tracking-wide text-purple-300">
                                 Purpose
                               </span>
                             </div>
 
-                            <p className="text-sm text-gray-200 leading-relaxed">
-                              {
-                                request.purpose
-                              }
+                            <p className="text-sm font-medium text-white leading-snug line-clamp-2">
+                              {request.purpose}
                             </p>
                           </div>
                         )}
 
-                        {/* What I'm Looking For */}
-                        {request.whatISeek && (
-                          <div className="mb-4 p-4 rounded-xl border border-orange-400/60 bg-orange-500/5">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Target className="w-4 h-4 text-orange-400" />
+                        {/* =========================================
+                            LOOKING FOR / CAN BRING
+                           ========================================= */}
+                        {(request.whatISeek ||
+                          request.whatIBring) && (
+                          <div className="grid grid-cols-2 gap-2 mb-3">
 
-                              <span className="text-sm font-semibold text-orange-300">
-                                What I'm Looking For
-                              </span>
-                            </div>
+                            {/* Looking For */}
+                            <div className="min-w-0 rounded-xl bg-white/[0.035] px-3 py-2.5">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <Target className="w-3.5 h-3.5 text-orange-400" />
 
-                            <p className="text-sm text-gray-200 leading-relaxed">
-                              {
-                                request.whatISeek
-                              }
-                            </p>
-                          </div>
-                        )}
-
-                        {/* What I Can Bring */}
-                        {request.whatIBring && (
-                          <div className="mb-4 p-4 rounded-xl border border-green-400/60 bg-green-500/5">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Sparkles className="w-4 h-4 text-green-400" />
-
-                              <span className="text-sm font-semibold text-green-300">
-                                What I Can Bring
-                              </span>
-                            </div>
-
-                            <p className="text-sm text-gray-200 leading-relaxed">
-                              {
-                                request.whatIBring
-                              }
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Preferred Meeting Date */}
-                        {request.preferredDate && (
-                          <div className="mb-4 p-4 rounded-xl border border-blue-400/60 bg-blue-500/5">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Calendar className="w-4 h-4 text-blue-400" />
-
-                              <span className="text-sm font-semibold text-blue-300">
-                                Preferred Meeting Date
-                              </span>
-                            </div>
-
-                            <p className="text-sm font-semibold text-white">
-                              {(() => {
-                                const [
-                                  year,
-                                  month,
-                                  day,
-                                ] =
-                                  request.preferredDate!.split(
-                                    '-'
-                                  );
-
-                                return `${day}-${month}-${year}`;
-                              })()}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Preferred Location */}
-                        {request.preferredLocation && (
-                          <div className="mb-4 p-4 rounded-xl border border-cyan-400/60 bg-cyan-500/5">
-                            <div className="flex items-center gap-2 mb-2">
-                              <MapPin className="w-4 h-4 text-cyan-400" />
-
-                              <span className="text-sm font-semibold text-cyan-300">
-                                Preferred Location
-                              </span>
-                            </div>
-
-                            <p className="text-sm text-gray-200">
-                              {
-                                request.preferredLocation
-                              }
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Status */}
-                        <div
-                          className={`p-3 rounded-xl ${statusConfig.bg} border-2 ${statusConfig.border} mb-4`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <StatusIcon
-                                className={`w-4 h-4 ${statusConfig.color}`}
-                              />
-
-                              <span
-                                className={`text-sm font-bold ${statusConfig.color}`}
-                              >
-                                {
-                                  statusConfig.label
-                                }
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                              <Clock className="w-3.5 h-3.5" />
-
-                              {
-                                request.timestamp
-                              }
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2 mt-4 flex-wrap">
-                          {/* ACCEPT */}
-                          {request.status ===
-                            'pending' && (
-                            <>
-                              <motion.button
-                                whileHover={{
-                                  scale: 1.02,
-                                }}
-                                whileTap={{
-                                  scale: 0.98,
-                                }}
-                                onClick={() =>
-                                  handleAcceptRequest(
-                                    request.id
-                                  )
-                                }
-                                className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold"
-                              >
-                                Accept
-                              </motion.button>
-
-                              <motion.button
-                                whileHover={{
-                                  scale: 1.02,
-                                }}
-                                whileTap={{
-                                  scale: 0.98,
-                                }}
-                                onClick={() =>
-                                  handleRejectRequest(
-                                    request.id
-                                  )
-                                }
-                                className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold"
-                              >
-                                Reject
-                              </motion.button>
-                            </>
-                          )}
-
-                         {/* BOOKING ACTIONS - USER B */}
-{request.status === 'accepted' && !!meeting && (
-  <div className="w-full">
-    {/* PAYMENT INFORMATION - ONLY WHILE USER B STILL NEEDS TO PAY */}
-    {meeting.payment_user_b !== true && (
-      <div className="mb-3 p-3 rounded-xl bg-blue-500/10 border border-blue-400/30">
-        <p className="text-sm text-blue-200">
-          Request accepted. Complete your payment within 24 hours to book the meeting.
-        </p>
-
-        {meeting.payment_deadline && (
-          <p className="text-xs text-blue-300 mt-1">
-            Payment deadline:{' '}
-            {new Date(
-              meeting.payment_deadline
-            ).toLocaleString('en-IN')}
-          </p>
-        )}
-      </div>
-    )}
-
-    {/* USER B HAS NOT PAID YET */}
-    {meeting.payment_user_b !== true && (
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={() => {
-          onSelectPeer(request.peerId);
-          setSelectedRequestId(request.id);
-          onNavigate('p2p-peer-payment');
-        }}
-        className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-500/30"
-      >
-        Book Now
-      </motion.button>
-    )}
-
-    {/* USER B HAS ALREADY PAID */}
-    {meeting.payment_user_b === true && (
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={() => {
-          setSelectedMeetingId(meeting.id);
-          setSelectedRequestId(request.id);
-          onNavigate('p2p-meeting-confirmation');
-        }}
-        className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow-lg"
-      >
-        View Booking Status
-      </motion.button>
-    )}
-  </div>
-)}
-
-                          {/* MEETING DATE */}
-                          {request.status ===
-                            'accepted' &&
-                            meeting?.meeting_time && (
-                              <div className="w-full mt-2 flex items-center justify-center gap-2 text-sm text-gray-400">
-                                <Clock className="w-4 h-4" />
-
-                                <span>
-                                  {new Date(
-                                    meeting.meeting_time
-                                  ).toLocaleString(
-                                    'en-IN',
-                                    {
-                                      dateStyle:
-                                        'medium',
-                                      timeStyle:
-                                        'short',
-                                    }
-                                  )}
+                                <span className="text-[10px] font-semibold text-orange-300">
+                                  Looking For
                                 </span>
+                              </div>
+
+                              <p className="text-xs text-gray-200 leading-snug line-clamp-2">
+                                {request.whatISeek || "—"}
+                              </p>
+                            </div>
+
+                            {/* Can Bring */}
+                            <div className="min-w-0 rounded-xl bg-white/[0.035] px-3 py-2.5">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+
+                                <span className="text-[10px] font-semibold text-emerald-300">
+                                  Can Bring
+                                </span>
+                              </div>
+
+                              <p className="text-xs text-gray-200 leading-snug line-clamp-2">
+                                {request.whatIBring || "—"}
+                              </p>
+                            </div>
+
+                          </div>
+                        )}
+
+                        {/* =========================================
+                            DATE / LOCATION
+                           ========================================= */}
+                        {(request.preferredDate ||
+                          request.preferredLocation) && (
+                          <div className="flex items-center gap-2 mb-3">
+
+                            {/* Date */}
+                            {request.preferredDate && (
+                              <div className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-500/5">
+                                <Calendar className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+
+                                <div className="min-w-0">
+                                  <p className="text-[9px] uppercase tracking-wide text-blue-300">
+                                    Date
+                                  </p>
+
+                                  <p className="text-[11px] font-semibold text-white truncate">
+                                    {(() => {
+                                      const [
+                                        year,
+                                        month,
+                                        day,
+                                      ] =
+                                        request.preferredDate!.split(
+                                          "-"
+                                        );
+
+                                      return `${day}-${month}-${year}`;
+                                    })()}
+                                  </p>
+                                </div>
                               </div>
                             )}
 
-                          {/* REJECTED */}
-                          {request.status ===
-                            'rejected' && (
-                            <button
-                              disabled
-                              className="flex-1 px-4 py-3 rounded-xl bg-gray-300 dark:bg-gray-700 text-gray-500 font-bold cursor-not-allowed"
+                            {/* Location */}
+                            {request.preferredLocation && (
+                              <div className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2 rounded-xl bg-cyan-500/5">
+                                <MapPin className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+
+                                <div className="min-w-0">
+                                  <p className="text-[9px] uppercase tracking-wide text-cyan-300">
+                                    Location
+                                  </p>
+
+                                  <p className="text-[11px] font-semibold text-white truncate">
+                                    {request.preferredLocation}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                          </div>
+                        )}
+
+                        {/* =========================================
+                            STATUS
+                           ========================================= */}
+                        <div
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl ${statusConfig.bg} border ${statusConfig.border} mb-3`}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <StatusIcon
+                              className={`w-3.5 h-3.5 ${statusConfig.color}`}
+                            />
+
+                            <span
+                              className={`text-[11px] font-semibold ${statusConfig.color}`}
                             >
-                              Rejected
-                            </button>
+                              {statusConfig.label}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                            <Clock className="w-3 h-3" />
+                            <span>
+                              {request.timestamp}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* =========================================
+                            ACCEPT / REJECT
+                           ========================================= */}
+                        {request.status === "pending" && (
+                          <div className="grid grid-cols-2 gap-2">
+
+                            <motion.button
+                              whileTap={{
+                                scale: 0.98,
+                              }}
+                              onClick={() =>
+                                handleAcceptRequest(
+                                  request.id
+                                )
+                              }
+                              className="h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-semibold shadow-md shadow-green-500/15"
+                            >
+                              Accept
+                            </motion.button>
+
+                            <motion.button
+                              whileTap={{
+                                scale: 0.98,
+                              }}
+                              onClick={() =>
+                                handleRejectRequest(
+                                  request.id
+                                )
+                              }
+                              className="h-10 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-semibold hover:bg-red-500/10 hover:text-red-300 hover:border-red-400/20 transition-all"
+                            >
+                              Reject
+                            </motion.button>
+
+                          </div>
+                        )}
+
+                        {/* =========================================
+                            ACCEPTED → PAYMENT / BOOKING
+                           ========================================= */}
+                        {request.status === "accepted" &&
+                          !!meeting && (
+                            <div className="space-y-2">
+
+                              {/* Payment notice */}
+                              {meeting.payment_user_b !==
+                                true && (
+                                <div className="px-3 py-2.5 rounded-xl bg-blue-500/8 border border-blue-400/15">
+                                  <p className="text-[9px] text-blue-100 leading-relaxed">
+                                    Request accepted. Complete your payment within 24 hours to book the meeting.
+                                  </p>
+
+                                  {meeting.payment_deadline && (
+                                    <p className="text-[9px] text-blue-300 mt-1">
+                                      Deadline:{" "}
+                                      {new Date(
+                                        meeting.payment_deadline
+                                      ).toLocaleString(
+                                        "en-IN"
+                                      )}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Book Now */}
+                              {meeting.payment_user_b !==
+                                true && (
+                                <motion.button
+                                  whileTap={{
+                                    scale: 0.98,
+                                  }}
+                                  onClick={() => {
+                                    onSelectPeer(
+                                      request.peerId
+                                    );
+
+                                    setSelectedRequestId(
+                                      request.id
+                                    );
+
+                                    onNavigate(
+                                      "p2p-peer-payment"
+                                    );
+                                  }}
+                                  className="w-full h-10 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-md shadow-blue-500/20"
+                                >
+                                  Book Now
+                                </motion.button>
+                              )}
+
+                              {/* Already Paid */}
+                              {meeting.payment_user_b ===
+                                true && (
+                                <motion.button
+                                  whileTap={{
+                                    scale: 0.98,
+                                  }}
+                                  onClick={() => {
+                                    setSelectedMeetingId(
+                                      meeting.id
+                                    );
+
+                                    setSelectedRequestId(
+                                      request.id
+                                    );
+
+                                    onNavigate(
+                                      "p2p-meeting-confirmation"
+                                    );
+                                  }}
+                                  className="w-full h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-semibold shadow-md shadow-green-500/20"
+                                >
+                                  View Booking Status
+                                </motion.button>
+                              )}
+
+                              {/* Meeting Date */}
+                              {meeting.meeting_time && (
+                                <div className="flex items-center justify-center gap-1.5 text-[10px] text-gray-400 pt-0.5">
+                                  <Clock className="w-3 h-3" />
+
+                                  <span>
+                                    {new Date(
+                                      meeting.meeting_time
+                                    ).toLocaleString(
+                                      "en-IN",
+                                      {
+                                        dateStyle:
+                                          "medium",
+                                        timeStyle:
+                                          "short",
+                                      }
+                                    )}
+                                  </span>
+                                </div>
+                              )}
+
+                            </div>
                           )}
-                        </div>
 
-                        {/* VIEW PROFILE */}
-                        <div className="flex gap-2 mt-3">
-                          <motion.button
-                            whileHover={{
-                              scale: 1.02,
-                            }}
-                            whileTap={{
-                              scale: 0.98,
-                            }}
-                            onClick={() => {
-                              onSelectPeer(
-                                request.peerId
-                              );
-
-                              onNavigate(
-                                'p2p-peer-profile'
-                              );
-                            }}
-                            className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 text-gray-700 dark:text-gray-300 font-bold text-sm flex items-center justify-center gap-2"
+                        {/* =========================================
+                            REJECTED
+                           ========================================= */}
+                        {request.status ===
+                          "rejected" && (
+                          <button
+                            disabled
+                            className="w-full h-10 rounded-xl bg-white/5 border border-white/10 text-gray-500 font-semibold text-sm cursor-not-allowed"
                           >
-                            View Profile
+                            Request Rejected
+                          </button>
+                        )}
 
-                            <ArrowRight className="w-4 h-4" />
-                          </motion.button>
-                        </div>
+                        {/* =========================================
+                            VIEW PROFILE
+                           ========================================= */}
+                        <motion.button
+                          whileTap={{
+                            scale: 0.98,
+                          }}
+                          onClick={() => {
+                            onSelectPeer(
+                              request.peerId
+                            );
+
+                            onNavigate(
+                              "p2p-peer-profile"
+                            );
+                          }}
+                          className="w-full h-9 mt-2.5 rounded-xl bg-transparent border border-white/10 hover:border-blue-400/40 hover:bg-blue-500/5 text-gray-400 hover:text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all"
+                        >
+                          View Profile
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </motion.button>
+
                       </div>
                     </div>
                   </motion.div>
