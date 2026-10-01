@@ -1453,7 +1453,7 @@ console.log(
                                   </p>
 
                                   {meeting.payment_deadline && (
-                                    <p className="text-[9px] text-blue-300 mt-1">
+                                    <p className="text-[9px9i] text-blue-300 mt-1">
                                       Deadline:{" "}
                                       {new Date(
                                         meeting.payment_deadline
