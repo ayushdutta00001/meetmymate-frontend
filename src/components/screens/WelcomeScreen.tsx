@@ -7,13 +7,11 @@ import { Heart, ArrowLeftRight } from 'lucide-react';
 interface WelcomeScreenProps {
   onSignIn: () => void;
   onSignUp: () => void;
-  onPrivacyPolicy: () => void;
 }
 
 export function WelcomeScreen({
   onSignIn,
   onSignUp,
-  onPrivacyPolicy,
 }: WelcomeScreenProps) {
   const features = [
     {
@@ -39,8 +37,8 @@ export function WelcomeScreen({
         className="
           pointer-events-none
           absolute
-          -top-28
-          -left-28
+          -top-24
+          -left-24
           w-72
           h-72
           sm:w-96
@@ -63,8 +61,8 @@ export function WelcomeScreen({
         className="
           pointer-events-none
           absolute
-          -bottom-28
-          -right-28
+          -bottom-24
+          -right-24
           w-72
           h-72
           sm:w-96
@@ -92,15 +90,14 @@ export function WelcomeScreen({
           relative
           z-10
           min-h-[100dvh]
-          w-full
           flex
           flex-col
           items-center
+          justify-center
           px-5
           py-6
           sm:px-6
           sm:py-8
-          md:justify-center
         "
       >
 
@@ -109,8 +106,14 @@ export function WelcomeScreen({
         ======================================================== */}
 
         <motion.div
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
+          initial={{
+            scale: 0,
+            rotate: -180,
+          }}
+          animate={{
+            scale: 1,
+            rotate: 0,
+          }}
           transition={{
             type: 'spring',
             duration: 1,
@@ -118,8 +121,8 @@ export function WelcomeScreen({
           className="
             mb-6
             sm:mb-8
-            md:mb-12
-            scale-[0.82]
+            md:mb-10
+            scale-[0.78]
             sm:scale-90
             md:scale-100
           "
@@ -128,7 +131,7 @@ export function WelcomeScreen({
         </motion.div>
 
         {/* =======================================================
-            HERO HEADING
+            HERO
         ======================================================== */}
 
         <motion.div
@@ -149,19 +152,19 @@ export function WelcomeScreen({
             text-center
             mb-7
             sm:mb-9
-            md:mb-12
+            md:mb-10
           "
         >
           <h2
             className="
               text-white
-              text-[30px]
-              leading-[1.1]
-              font-bold
+              text-[31px]
+              leading-[1.08]
               tracking-tight
+              font-bold
+              mb-3
               sm:text-4xl
               md:text-5xl
-              mb-3
               sm:mb-4
             "
           >
@@ -170,7 +173,7 @@ export function WelcomeScreen({
 
           <p
             className="
-              text-white/85
+              text-white/80
               text-[15px]
               leading-6
               sm:text-base
@@ -179,8 +182,8 @@ export function WelcomeScreen({
               mx-auto
             "
           >
-            Book your meetings and we will arrange the rest.
-            No browsing, no chatting, just genuine connection.
+            Your time is valuable. Book meaningful connections
+            for romance or peer collaboration.
           </p>
         </motion.div>
 
@@ -207,7 +210,7 @@ export function WelcomeScreen({
             sm:gap-4
             mb-7
             sm:mb-9
-            md:mb-12
+            md:mb-10
           "
         >
           {features.map((feature, index) => {
@@ -234,7 +237,7 @@ export function WelcomeScreen({
                 className="
                   w-full
                   min-w-0
-                  h-[142px]
+                  h-[145px]
                   sm:h-[160px]
                   rounded-2xl
                   glass
@@ -243,10 +246,12 @@ export function WelcomeScreen({
                   items-center
                   justify-center
                   gap-3
-                  px-3
-                  py-4
+                  px-2
+                  sm:px-4
                 "
               >
+                {/* Icon */}
+
                 <div
                   className={`
                     w-[58px]
@@ -259,8 +264,8 @@ export function WelcomeScreen({
                     flex
                     items-center
                     justify-center
-                    shadow-lg
                     flex-shrink-0
+                    shadow-lg
                   `}
                 >
                   <Icon
@@ -273,6 +278,8 @@ export function WelcomeScreen({
                     "
                   />
                 </div>
+
+                {/* Label */}
 
                 <span
                   className="
@@ -314,31 +321,14 @@ export function WelcomeScreen({
             sm:space-y-4
           "
         >
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="large"
+            fullWidth
             onClick={onSignUp}
-            className="
-              w-full
-              h-13
-              sm:h-14
-              rounded-xl
-              bg-[#FFF27C]
-              hover:bg-[#FFE95C]
-              active:scale-[0.99]
-              text-black
-              font-medium
-              text-base
-              transition-all
-              duration-200
-              shadow-sm
-            "
-            style={{
-              color: '#000000',
-              WebkitTextFillColor: '#000000',
-            }}
           >
             Create Account
-          </button>
+          </Button>
 
           <Button
             variant="glass"
@@ -351,7 +341,7 @@ export function WelcomeScreen({
         </motion.div>
 
         {/* =======================================================
-            FOOTER / LEGAL
+            FOOTER TEXT
         ======================================================== */}
 
         <motion.p
@@ -365,33 +355,17 @@ export function WelcomeScreen({
             delay: 1.2,
           }}
           className="
-            w-full
-            max-w-md
             text-white/60
             text-[12px]
             sm:text-sm
             leading-5
-            sm:leading-6
             mt-5
             sm:mt-7
             text-center
-            px-1
+            max-w-sm
           "
         >
-          By continuing, you agree to our Terms & Conditions and{' '}
-          <button
-            type="button"
-            onClick={onPrivacyPolicy}
-            className="
-              underline
-              underline-offset-2
-              text-white/80
-              hover:text-white
-              transition-colors
-            "
-          >
-            Privacy Policy
-          </button>
+          By continuing, you agree to our Terms & Conditions
         </motion.p>
 
       </div>
