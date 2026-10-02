@@ -64,9 +64,7 @@ export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeSc
           transition={{ delay: 0.3 }}
           className="text-center mb-12 max-w-md"
         >
-          <h2 className="text-white mb-4">
-            Connect, Meet, Grow
-          </h2>
+         
 
           <p className="text-white/80">
            Book your meetings we will arrange the rest. No browsing, no chatting, just genuine connection.
