@@ -10,11 +10,15 @@ interface WelcomeScreenProps {
   onPrivacyPolicy: () => void;
 }
 
-export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeScreenProps) {
+export function WelcomeScreen({
+  onSignIn,
+  onSignUp,
+  onPrivacyPolicy,
+}: WelcomeScreenProps) {
   const features = [
     {
       icon: Heart,
-      label: 'Blind Mates',
+      label: 'Blind Mate',
       color: 'from-pink-500 to-rose-500',
     },
     {
@@ -25,60 +29,186 @@ export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeSc
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#3C82F6] via-[#1F3C88] to-[#3758FF] dark:from-[#0A0F1F] dark:via-[#1F3C88] dark:to-[#0A0F1F] relative overflow-hidden">
-      {/* Animated background blobs */}
+    <div className="min-h-[100dvh] w-full bg-gradient-to-br from-[#3C82F6] via-[#1F3C88] to-[#3758FF] dark:from-[#0A0F1F] dark:via-[#1F3C88] dark:to-[#0A0F1F] relative overflow-hidden">
+
+      {/* =========================================================
+          ANIMATED BACKGROUND BLOBS
+      ========================================================== */}
+
       <motion.div
-        className="absolute -top-20 -left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"
+        className="
+          pointer-events-none
+          absolute
+          -top-28
+          -left-28
+          w-72
+          h-72
+          sm:w-96
+          sm:h-96
+          bg-white/10
+          rounded-full
+          blur-3xl
+        "
         animate={{
           scale: [1, 1.2, 1],
-          x: [0, 50, 0],
+          x: [0, 40, 0],
         }}
-        transition={{ duration: 8, repeat: Infinity }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+        }}
       />
 
       <motion.div
-        className="absolute -bottom-20 -right-20 w-96 h-96 bg-[#FFF27C]/20 rounded-full blur-3xl"
+        className="
+          pointer-events-none
+          absolute
+          -bottom-28
+          -right-28
+          w-72
+          h-72
+          sm:w-96
+          sm:h-96
+          bg-[#FFF27C]/20
+          rounded-full
+          blur-3xl
+        "
         animate={{
           scale: [1, 1.3, 1],
-          x: [0, -50, 0],
+          x: [0, -40, 0],
         }}
-        transition={{ duration: 10, repeat: Infinity }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+        }}
       />
 
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
-        {/* Logo */}
+      {/* =========================================================
+          MAIN CONTENT
+      ========================================================== */}
+
+      <div
+        className="
+          relative
+          z-10
+          min-h-[100dvh]
+          w-full
+          flex
+          flex-col
+          items-center
+          px-5
+          py-6
+          sm:px-6
+          sm:py-8
+          md:justify-center
+        "
+      >
+
+        {/* =======================================================
+            LOGO
+        ======================================================== */}
+
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', duration: 1 }}
-          className="mb-12"
+          transition={{
+            type: 'spring',
+            duration: 1,
+          }}
+          className="
+            mb-6
+            sm:mb-8
+            md:mb-12
+            scale-[0.82]
+            sm:scale-90
+            md:scale-100
+          "
         >
           <Logo size="large" />
         </motion.div>
 
-        {/* Heading */}
+        {/* =======================================================
+            HERO HEADING
+        ======================================================== */}
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-center mb-12 max-w-md"
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            delay: 0.3,
+          }}
+          className="
+            w-full
+            max-w-md
+            text-center
+            mb-7
+            sm:mb-9
+            md:mb-12
+          "
         >
-          <h2 className="text-white mb-4">
+          <h2
+            className="
+              text-white
+              text-[30px]
+              leading-[1.1]
+              font-bold
+              tracking-tight
+              sm:text-4xl
+              md:text-5xl
+              mb-3
+              sm:mb-4
+            "
+          >
             Connect, Meet, Grow
           </h2>
 
-          <p className="text-white/80">
-           Book your meetings we will arrange the rest. No browsing, no chatting, just genuine connection.
+          <p
+            className="
+              text-white/85
+              text-[15px]
+              leading-6
+              sm:text-base
+              sm:leading-7
+              max-w-sm
+              mx-auto
+            "
+          >
+            Book your meetings and we will arrange the rest.
+            No browsing, no chatting, just genuine connection.
           </p>
         </motion.div>
 
-        {/* Feature cards */}
+        {/* =======================================================
+            FEATURE CARDS
+        ======================================================== */}
+
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex flex-wrap justify-center gap-4 mb-12 max-w-2xl"
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          transition={{
+            delay: 0.5,
+          }}
+          className="
+            w-full
+            max-w-[420px]
+            grid
+            grid-cols-2
+            gap-3
+            sm:gap-4
+            mb-7
+            sm:mb-9
+            md:mb-12
+          "
         >
           {features.map((feature, index) => {
             const Icon = feature.icon;
@@ -86,19 +216,74 @@ export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeSc
             return (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 + index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="glass rounded-2xl p-6 flex flex-col items-center gap-3 min-w-[140px]"
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                transition={{
+                  delay: 0.6 + index * 0.1,
+                }}
+                whileHover={{
+                  scale: 1.04,
+                  y: -4,
+                }}
+                className="
+                  w-full
+                  min-w-0
+                  h-[142px]
+                  sm:h-[160px]
+                  rounded-2xl
+                  glass
+                  flex
+                  flex-col
+                  items-center
+                  justify-center
+                  gap-3
+                  px-3
+                  py-4
+                "
               >
                 <div
-                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center`}
+                  className={`
+                    w-[58px]
+                    h-[58px]
+                    sm:w-16
+                    sm:h-16
+                    rounded-2xl
+                    bg-gradient-to-br
+                    ${feature.color}
+                    flex
+                    items-center
+                    justify-center
+                    shadow-lg
+                    flex-shrink-0
+                  `}
                 >
-                  <Icon className="w-8 h-8 text-white" />
+                  <Icon
+                    className="
+                      w-7
+                      h-7
+                      sm:w-8
+                      sm:h-8
+                      text-white
+                    "
+                  />
                 </div>
 
-                <span className="text-white text-sm text-center">
+                <span
+                  className="
+                    text-white
+                    text-sm
+                    sm:text-base
+                    font-medium
+                    text-center
+                    leading-tight
+                  "
+                >
                   {feature.label}
                 </span>
               </motion.div>
@@ -106,17 +291,47 @@ export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeSc
           })}
         </motion.div>
 
-        {/* CTA Buttons */}
+        {/* =======================================================
+            CTA BUTTONS
+        ======================================================== */}
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="w-full max-w-md space-y-4"
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            delay: 0.9,
+          }}
+          className="
+            w-full
+            max-w-md
+            space-y-3
+            sm:space-y-4
+          "
         >
           <button
             type="button"
             onClick={onSignUp}
-            className="w-full h-14 rounded-xl bg-[#FFF27C] hover:bg-[#FFE95C] text-black font-medium transition-all duration-200 shadow-sm"
+            className="
+              w-full
+              h-13
+              sm:h-14
+              rounded-xl
+              bg-[#FFF27C]
+              hover:bg-[#FFE95C]
+              active:scale-[0.99]
+              text-black
+              font-medium
+              text-base
+              transition-all
+              duration-200
+              shadow-sm
+            "
             style={{
               color: '#000000',
               WebkitTextFillColor: '#000000',
@@ -135,22 +350,50 @@ export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeSc
           </Button>
         </motion.div>
 
-        {/* Footer text */}
+        {/* =======================================================
+            FOOTER / LEGAL
+        ======================================================== */}
+
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="text-white/60 text-sm mt-8 text-center"
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          transition={{
+            delay: 1.2,
+          }}
+          className="
+            w-full
+            max-w-md
+            text-white/60
+            text-[12px]
+            sm:text-sm
+            leading-5
+            sm:leading-6
+            mt-5
+            sm:mt-7
+            text-center
+            px-1
+          "
         >
           By continuing, you agree to our Terms & Conditions and{' '}
           <button
             type="button"
             onClick={onPrivacyPolicy}
-            className="underline underline-offset-2 text-white/80 hover:text-white transition-colors"
+            className="
+              underline
+              underline-offset-2
+              text-white/80
+              hover:text-white
+              transition-colors
+            "
           >
             Privacy Policy
           </button>
         </motion.p>
+
       </div>
     </div>
   );
