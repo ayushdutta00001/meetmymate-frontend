@@ -113,17 +113,17 @@ export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeSc
           transition={{ delay: 0.9 }}
           className="w-full max-w-md space-y-4"
         >
-          <button
-            type="button"
-            onClick={onSignUp}
-            className="w-full h-14 rounded-xl bg-[#FFF27C] hover:bg-[#FFE95C] text-black font-medium transition-all duration-200 shadow-sm"
-            style={{
-              color: '#000000',
-              WebkitTextFillColor: '#000000',
-            }}
-          >
-            Create Account
-          </button>
+         <button 
+  type="button" 
+  onClick={onSignUp} 
+  className="w-full h-14 rounded-xl bg-[#FFF27C] hover:bg-[#FFE95C] text-black font-medium transition-all duration-200 shadow-sm"
+  style={{ 
+    color: '#000000', 
+    WebkitTextFillColor: '#000000', 
+  }} 
+> 
+  Create Account 
+</button>
 
           <Button
             variant="glass"
