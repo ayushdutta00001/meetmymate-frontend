@@ -29,7 +29,7 @@ export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) 
             >
               <Shield className="w-10 h-10 text-white" />
             </motion.div>
-            <h1 className="mb-3">Blind Mate</h1>
+            <h1 className="mb-3">Blind Date</h1>
             <h2 className="mb-2">We arrange. You meet.</h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
               Share your availability, and we'll arrange a meeting for you.
@@ -54,7 +54,7 @@ export function BlindDateLanding({ onNavigate, onBack }: BlindDateLandingProps) 
   onClick={() => onNavigate('blind-date-booking')}
   className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl font-medium" 
 >
-  Book a Blind Mate 
+  Book a Blind Date 
 </button>
          
         </motion.div>

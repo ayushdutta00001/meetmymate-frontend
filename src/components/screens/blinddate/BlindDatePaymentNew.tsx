@@ -55,7 +55,7 @@ export function BlindDatePaymentNew({
 
       if (!parsed?.paymentDraftId) {
         console.error(
-          "Blind Mate payment draft ID is missing:",
+          "Blind Date payment draft ID is missing:",
           parsed
         );
 
@@ -76,7 +76,7 @@ export function BlindDatePaymentNew({
       });
     } catch (error) {
       console.error(
-        "Failed to load Blind Mate payment data:",
+        "Failed to load Blind Date payment data:",
         error
       );
 
@@ -264,10 +264,10 @@ export function BlindDatePaymentNew({
         currency:
           orderData.order.currency,
 
-        name: "Blind Mate",
+        name: "Blind Date",
 
         description:
-          "Blind Mate Booking",
+          "Blind Date Booking",
 
         order_id:
           orderData.order.id,
@@ -335,7 +335,7 @@ export function BlindDatePaymentNew({
               !verificationData?.verified
             ) {
               console.error(
-                "Blind Mate payment verification failed:",
+                "Blind Date payment verification failed:",
                 verificationError ||
                   verificationData
               );
@@ -372,7 +372,7 @@ export function BlindDatePaymentNew({
               !paymentResult?.success
             ) {
               console.error(
-                "Blind Mate payment finalization failed:",
+                "Blind Date payment finalization failed:",
                 paymentResult
               );
 
@@ -425,7 +425,7 @@ export function BlindDatePaymentNew({
 
           } catch (error: any) {
             console.error(
-              "Blind Mate payment handler error:",
+              "Blind Date payment handler error:",
               error
             );
 
@@ -441,7 +441,7 @@ export function BlindDatePaymentNew({
         modal: {
           ondismiss: function () {
             console.log(
-              "Blind Mate Razorpay checkout closed by user"
+              "Blind Date Razorpay checkout closed by user"
             );
 
             setProcessing(false);
@@ -456,7 +456,7 @@ export function BlindDatePaymentNew({
 
     } catch (error: any) {
       console.error(
-        "Blind Mate payment error:",
+        "Blind Date payment error:",
         error
       );
 
@@ -566,11 +566,11 @@ export function BlindDatePaymentNew({
               className="mb-8 p-6 rounded-xl border border-gray-200 dark:border-gray-800"
             >
               <h4 className="mb-4">
-                Blind Mate Booking
+                Blind Date Booking
               </h4>
 
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                You’re about to confirm your blind mate booking.
+                You’re about to confirm your Blind Date booking.
               </p>
 
               <div className="flex justify-between items-center mt-4">
@@ -611,7 +611,7 @@ export function BlindDatePaymentNew({
                   </h4>
 
                  <p className="text-sm text-blue-800 dark:text-blue-300 leading-relaxed">
-  You'll be charged now. We will try to arrange your Blind Mate within
+  You'll be charged now. We will try to arrange your Blind Date within
   <strong> 24 hours of payment</strong>. If no match is found within that
   period, your <strong>full payment will be refunded automatically</strong>.
 </p>
@@ -636,7 +636,7 @@ export function BlindDatePaymentNew({
     >
       Terms of Service
     </button>{" "}
-    and understand the Blind Mate booking and payment terms.
+    and understand the Blind Date booking and payment terms.
   </span>
 </label>
             {/* =================================================

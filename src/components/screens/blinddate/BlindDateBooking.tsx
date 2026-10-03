@@ -213,7 +213,7 @@ export function BlindDateBooking({
 
             <div className="min-w-0 flex-1">
               <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                Book a Blind Mate
+                Book a Blind Date
               </h2>
 <h2 className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                at ₹399 we arrange a safe, public meeting for you.

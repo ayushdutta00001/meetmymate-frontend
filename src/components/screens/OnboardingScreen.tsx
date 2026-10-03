@@ -14,7 +14,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const slides = [
     {
       icon: Heart,
-      title: 'Blind Mate',
+      title: 'Blind Date',
       description:
         'Experience the thrill of mystery dates. Let us match you with compatible people for meaningful connections.',
       color: 'from-pink-500 to-red-500',

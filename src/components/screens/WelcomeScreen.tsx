@@ -14,7 +14,7 @@ export function WelcomeScreen({ onSignIn, onSignUp, onPrivacyPolicy }: WelcomeSc
   const features = [
     {
       icon: Heart,
-      label: 'Blind Mates',
+      label: 'Blind Dates',
       color: 'from-pink-500 to-rose-500',
     },
     {

@@ -297,7 +297,7 @@ const currentStep = STEP_FOR_STATUS[uiStatus];
                <BackButton onClick={() => onNavigate("bookings")} />
              
               <div>
-                <h2>Blind Mate Status</h2>
+                <h2>Blind Date Status</h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Track your booking in real time</p>
               </div>
             </div>
@@ -850,7 +850,7 @@ const current =
       <div>
 
         <p className="text-pink-100 text-sm">
-          Your Blind Mate 
+          Your Blind Date 
         </p>
 
         <h3 className="text-white text-xl font-bold">

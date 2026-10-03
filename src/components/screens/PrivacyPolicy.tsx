@@ -18,7 +18,7 @@ const sections = [
     body: [
       'Account and profile information: name, email address, phone number, age, gender, city, profile photo, bio, interests, languages, and information you choose to include in your profile.',
       'P2P information: professional or collaboration information you provide for PartnerUp/P2P, including profile details, goals, preferences, matching activity, requests, acceptances, and meeting-related information.',
-      'Blind Mate information: booking details, age and gender preferences, availability, preferred locations, meeting information, booking status, and information required to arrange the meeting.',
+      'Blind Date information: booking details, age and gender preferences, availability, preferred locations, meeting information, booking status, and information required to arrange the meeting.',
       'Provider information: service selections, availability, profile information, verification information, identity documents such as Aadhaar or PAN documents when submitted for verification, and payout information such as bank or UPI details when required for provider payouts.',
       'Payment information: transaction details such as payment amount, payment status, order/payment identifiers, refund information, and other payment references needed to confirm or reconcile a transaction. Payment credentials are processed by our payment provider where applicable.',
       'Notifications and device information: push-notification tokens and information needed to deliver notifications, maintain notification preferences, and operate notification services.',
@@ -39,7 +39,7 @@ const sections = [
       'Information you choose to include in a P2P/PartnerUp profile may be shown to eligible users according to the product flow so that matching can take place.',
       'For meeting-based services, we may share limited information with the person or provider involved in the meeting when that information is necessary to arrange, confirm, or conduct the meeting.',
       'For P2P/PartnerUp meetings, once a meeting is confirmed and contact exchange is required for coordination, we may share your phone number and email address with the matched participant. This contact information is shared only with the relevant matched participant for the meeting and is not made publicly visible through the platform.',
-      'For Blind Mate bookings, contact details may be disclosed to the matched participant at the stage required by the service flow for the meeting. We do not provide unrestricted access to all account information.'
+      'For Blind Date bookings, contact details may be disclosed to the matched participant at the stage required by the service flow for the meeting. We do not provide unrestricted access to all account information.'
     ]
   },
   {

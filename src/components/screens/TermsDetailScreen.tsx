@@ -37,14 +37,14 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
       icon: Users,
       title: '3. Our Current Services',
       content:
-        'Meet My Mate in currently provides two services: (1) Blind Mate, which is an arranged offline meeting experience between participants, and (2) PartnerUp, which facilitates offline professional or collaborative meetings between participants. No other service is covered by these Terms unless expressly added to the Platform in the future.',
+        'Meet My Mate in currently provides two services: (1) Blind Date, which is an arranged offline meeting experience between participants, and (2) PartnerUp, which facilitates offline professional or collaborative meetings between participants. No other service is covered by these Terms unless expressly added to the Platform in the future.',
     },
 
     {
       icon: Users,
-      title: '4. Blind Mate',
+      title: '4. Blind Date',
       content:
-        'Blind Mate is an offline meeting arrangement service. A user provides the required preferences and booking information, completes the applicable payment, and waits for the service to arrange an appropriate meeting. When the service flow requires it, relevant contact details may be shared with the matched participant so the meeting can be coordinated or attended.',
+        'Blind Date is an offline meeting arrangement service. A user provides the required preferences and booking information, completes the applicable payment, and waits for the service to arrange an appropriate meeting. When the service flow requires it, relevant contact details may be shared with the matched participant so the meeting can be coordinated or attended.',
     },
 
     {
@@ -65,7 +65,7 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
       icon: Lock,
       title: '7. Information Sharing for Meeting Arrangements',
       content:
-        'Because our services involve real-world meetings, certain information must be shared between participants to enable those meetings to take place. For Blind Mate, contact details may be shared with the matched participant when required by the service flow. For PartnerUp, relevant profile information and contact details may be shared with the other participant when required to arrange the meeting. Users should provide only accurate information that they are authorized to share.',
+        'Because our services involve real-world meetings, certain information must be shared between participants to enable those meetings to take place. For Blind Date, contact details may be shared with the matched participant when required by the service flow. For PartnerUp, relevant profile information and contact details may be shared with the other participant when required to arrange the meeting. Users should provide only accurate information that they are authorized to share.',
     },
 
     {
@@ -91,9 +91,9 @@ export function TermsDetailScreen({ onBack }: TermsDetailScreenProps) {
 
     {
       icon: CreditCard,
-      title: '11. Blind Mate Refund Condition',
+      title: '11. Blind Date Refund Condition',
       content:
-        'For Blind Mate, the applicable booking flow provides for a full refund when the service does not arrange a match within the stated 24-hour matching period, subject to successful payment verification and the conditions shown in the applicable booking flow. The service fee and refund conditions displayed at the time of booking form part of the applicable service terms.',
+        'For Blind Date, the applicable booking flow provides for a full refund when the service does not arrange a match within the stated 24-hour matching period, subject to successful payment verification and the conditions shown in the applicable booking flow. The service fee and refund conditions displayed at the time of booking form part of the applicable service terms.',
     },
 
     {

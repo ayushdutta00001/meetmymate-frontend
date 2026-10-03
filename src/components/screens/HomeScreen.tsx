@@ -308,7 +308,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
           : 0;
 
       // -------------------------------------------------
-      // USER'S BLIND MATE BOOKINGS
+      // USER'S Blind Date BOOKINGS
       //
       // blind_mate_bookings is user-scoped.
       // -------------------------------------------------
@@ -346,7 +346,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
         );
 
       // -------------------------------------------------
-      // USER'S BLIND MATE MATCHES
+      // USER'S Blind Date MATCHES
       //
       // blind_date_matches is user-scoped by RLS.
       // We fetch visible matches and make sure the
@@ -359,7 +359,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
 
       if (blindDateMatchesQuery.error) {
         console.error(
-          'Blind Mate matches error:',
+          'Blind Date matches error:',
           blindDateMatchesQuery.error
         );
       }
@@ -960,7 +960,7 @@ service terms, and applicable refund policies.
               },
               {
                 key: 'date',
-                label: '💘 Blind Mate',
+                label: '💘 Blind Date',
               },
               {
                 key: 'p2p',
@@ -1002,7 +1002,7 @@ service terms, and applicable refund policies.
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 
           {/* =============================================
-              BLIND MATE
+              Blind Date
           ============================================= */}
 
           <AnimatePresence>
@@ -1255,7 +1255,7 @@ service terms, and applicable refund policies.
                           "'Outfit', sans-serif",
                       }}
                     >
-                      Blind Mate
+                      Blind Date
                     </h2>
 
                     <p className="

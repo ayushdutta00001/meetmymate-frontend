@@ -37,7 +37,7 @@ export function TermsScreen({
       icon: Users,
       title: 'Our Services',
       content:
-        'Meet My Mate in currently provides two services: Blind Mate and PartnerUp. Both services are designed to arrange real-world, offline meetings between users according to the applicable service flow.',
+        'Meet My Mate in currently provides two services: Blind Date and PartnerUp. Both services are designed to arrange real-world, offline meetings between users according to the applicable service flow.',
     },
     {
       icon: FileText,
@@ -49,7 +49,7 @@ export function TermsScreen({
       icon: Lock,
       title: 'Information & Contact Sharing',
       content:
-        'To arrange meetings, we may share relevant information between participants. For Blind Mate, contact details may be shared with the matched participant when required by the service flow. For PartnerUp, relevant profile information and contact details may be shared with the other participant when required to arrange the meeting.',
+        'To arrange meetings, we may share relevant information between participants. For Blind Date, contact details may be shared with the matched participant when required by the service flow. For PartnerUp, relevant profile information and contact details may be shared with the other participant when required to arrange the meeting.',
     },
     {
       icon: AlertTriangle,

@@ -321,7 +321,7 @@ export function Footer({ onNavigate }: FooterProps) {
                 onClick={() => navigateTo("blind-date")}
                 className={footerLinkClass}
               >
-                <span>Blind Mate</span>
+                <span>Blind Date</span>
                 <ChevronRight
                   className="
                     h-3.5
